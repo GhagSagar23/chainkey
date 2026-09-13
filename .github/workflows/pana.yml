@@ -1,0 +1,51 @@
+name: Pana Package Health
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+  push:
+    branches: [ master, develop ]
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Minimum Pana score threshold'
+        required: false
+        default: '140'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pana:
+    name: Pana Score (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - packages/chainkey_platform_interface
+          - packages/chainkey_android
+          - packages/chainkey_ios
+          - packages/chainkey_web
+          - packages/chainkey
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Pana
+        run: dart pub global activate pana
+
+      - name: Run Pana Analysis
+        env:
+          THRESHOLD: ${{ github.event.inputs.threshold || '140' }}
+        run: |
+          echo "Running Pana analysis for ${{ matrix.package }} (Score Threshold: $THRESHOLD)..."
+          dart pub global run pana --no-warning --exit-code-threshold "$THRESHOLD" "${{ matrix.package }}"

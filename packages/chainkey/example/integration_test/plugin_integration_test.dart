@@ -5,7 +5,8 @@ import 'package:chainkey/chainkey.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('isHardwareIsolationSupported check', (WidgetTester tester) async {
+  testWidgets('isHardwareIsolationSupported check',
+      (WidgetTester tester) async {
     const plugin = Chainkey();
     final isSupported = await plugin.isHardwareIsolationSupported(
       HardwareIsolationLevel.software,
