@@ -66,3 +66,10 @@ This document consolidates key findings, cryptographic requirements, and competi
 - **iOS Layer**: Swift with `AuthenticationServices` (`ASAuthorizationPlatformPublicKeyCredentialProvider`) and `CryptoKit`.
 - **Android Layer**: Kotlin with `androidx.credentials.CredentialManager` (WebAuthn/Passkey) and `android.security.keystore` (direct Enclave signing).
 - **Web Layer**: `dart:js_interop` interacting directly with W3C `navigator.credentials` API.
+
+---
+
+## 4. References & Architecture Guides
+- [`PLUGIN_BEST_PRACTICES.md`](file:///Users/ghag23/Projects/chainkey/documentation/PLUGIN_BEST_PRACTICES.md) — Comprehensive Flutter plugin development standards, federated architecture rules, native lifecycle governance, and testing hierarchy.
+- [`PRD.md`](file:///Users/ghag23/Projects/chainkey/documentation/PRD.md) — Product Requirements Document.
+- [`ROADMAP.md`](file:///Users/ghag23/Projects/chainkey/documentation/ROADMAP.md) — Phase execution and milestone schedule.

@@ -1,0 +1,34 @@
+name: chainkey
+description: Turnkey Flutter plugin for seedless Web3 authentication. Hardware-isolated biometric key generation (Secure Enclave & StrongBox), WebAuthn attestation, and EIP-7212/ERC-4337 signature serialization.
+version: 0.1.0
+repository: https://github.com/chainkey/chainkey/tree/main/packages/chainkey
+issue_tracker: https://github.com/chainkey/chainkey/issues
+resolution: workspace
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.22.0"
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        default_package: chainkey_android
+      ios:
+        default_package: chainkey_ios
+      web:
+        default_package: chainkey_web
+
+dependencies:
+  flutter:
+    sdk: flutter
+  chainkey_platform_interface: ^0.1.0
+  chainkey_android: ^0.1.0
+  chainkey_ios: ^0.1.0
+  chainkey_web: ^0.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  plugin_platform_interface: ^2.1.8

@@ -1,0 +1,20 @@
+name: chainkey_platform_interface
+description: Common platform interface for the chainkey federated plugin.
+version: 0.1.0
+repository: https://github.com/chainkey/chainkey/tree/main/packages/chainkey_platform_interface
+issue_tracker: https://github.com/chainkey/chainkey/issues
+resolution: workspace
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

@@ -1,0 +1,32 @@
+name: chainkey_workspace
+description: Monorepo workspace for chainkey federated plugin.
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+workspace:
+  - packages/chainkey
+  - packages/chainkey/example
+  - packages/chainkey_platform_interface
+  - packages/chainkey_android
+  - packages/chainkey_ios
+  - packages/chainkey_web
+
+dev_dependencies:
+  melos: ^8.1.0
+  pigeon: ^29.0.1
+
+melos:
+  scripts:
+    analyze:
+      run: melos exec -- dart analyze .
+      description: Run dart analyze across all packages.
+
+    test:
+      run: melos exec --dir-exists="test" -- flutter test
+      description: Run flutter test in all packages with a test/ directory.
+
+    pigeon:
+      run: dart run pigeon --input pigeons/key_api.dart
+      description: Regenerate type-safe Pigeon host and Dart bindings from pigeons/key_api.dart.
