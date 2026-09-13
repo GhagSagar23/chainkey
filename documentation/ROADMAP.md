@@ -3,11 +3,42 @@
 ## Document Metadata
 - **Project**: `chainkey`
 - **Specification Version**: 1.0.0
+- **Base Version Initializer**: `0.0.1`
 - **Status**: Ready for Implementation
 - **Source Documents**:
   - [`PRD.md`](file:///Users/ghag23/Projects/chainkey/documentation/PRD.md)
   - [`FINDINGS.md`](file:///Users/ghag23/Projects/chainkey/documentation/FINDINGS.md)
   - [`RESEARCH.md`](file:///Users/ghag23/Projects/chainkey/documentation/RESEARCH.md)
+
+---
+
+## Semantic Versioning & Phase Hierarchy
+
+`chainkey` follows strict semantic versioning mapped to development phases and sub-phases:
+
+| Tier | Version Scheme | Increment Rule | Example Progression |
+| :--- | :--- | :--- | :--- |
+| **Initial Base** | `0.0.1` | Project initialization baseline | `0.0.1` |
+| **Code Fixes & Enhancements** | `PATCH` (`0.0.x`) | Bug fixes, performance tweaks, refactors | `0.0.1` $\rightarrow$ `0.0.2` $\rightarrow$ `0.0.3` |
+| **Sub-Phases** | `MINOR` (`x.Y.0`) | Completing a sub-phase deliverable milestone | `0.1.0` $\rightarrow$ `0.2.0` $\rightarrow$ `0.3.0` |
+| **Phases** | `MAJOR` (`X.0.0`) | Completing an entire overarching phase milestone | `1.0.0` $\rightarrow$ `2.0.0` $\rightarrow$ `3.0.0` |
+
+### Phase & Sub-Phase Version Mapping Matrix
+
+| Phase / Sub-Phase | Version Milestone | GitHub Label | Label Color | VIBGYOR Palette |
+| :--- | :---: | :---: | :---: | :--- |
+| **Phase 1: Core Foundation & Cryptographic Primitives** | **`1.0.0`** | `p: 1.0.0` | `#7F00FF` | Violet |
+| ├─ Sub-Phase 1.1: Architecture Foundation, Models & Pigeon IPC | `0.1.0` | `s/p: 0.1.0` | `#4B0082` | Indigo |
+| ├─ Sub-Phase 1.2: Pure Dart Cryptographic Engine (DER & Low-S) | `0.2.0` | `s/p: 0.2.0` | `#0000FF` | Blue |
+| └─ Sub-Phase 1.3: Direct Native Hardware Enclave Driver | `0.3.0` | `s/p: 0.3.0` | `#00A877` | Cyan / Blue-Green |
+| **Phase 2: WebAuthn Passkey Engine & Protocol Scanners** | **`2.0.0`** | `p: 2.0.0` | `#008000` | Green |
+| ├─ Sub-Phase 2.1: Native OS Passkey Credential Bridges | `1.1.0` | `s/p: 1.1.0` | `#7CFC00` | Yellow-Green |
+| ├─ Sub-Phase 2.2: Zero-Copy ClientDataJSON Offset Scanner | `1.2.0` | `s/p: 1.2.0` | `#FFFF00` | Yellow |
+| └─ Sub-Phase 2.3: Relying Party (RP ID) & Mobile Domain Association | `1.3.0` | `s/p: 1.3.0` | `#FFD700` | Amber / Gold |
+| **Phase 3: Smart Account Adapters & Production Launch** | **`3.0.0`** | `p: 3.0.0` | `#FF7F00` | Orange |
+| ├─ Sub-Phase 3.1: Universal Smart Account Signature Adapters | `2.1.0` | `s/p: 2.1.0` | `#FF4500` | Orange-Red |
+| ├─ Sub-Phase 3.2: Multi-Signer Lifecycle & Recovery UserOps | `2.2.0` | `s/p: 2.2.0` | `#DC143C` | Crimson |
+| └─ Sub-Phase 3.3: Live Testnet Verification, Audit & pub.dev Launch | `2.3.0` | `s/p: 2.3.0` | `#FF0000` | Red |
 
 ---
 
@@ -39,35 +70,39 @@
 The implementation is structured strictly in chronological dependency order:
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Phase 1: Core Foundation & Cryptographic Primitives (The Base Engine)   │
-│  - IPC Scaffolding & Domain Models                                      │
-│  - Pure Dart DER Parser & Low-S Curve Math                              │
-│  - Direct Native Hardware Enclave Signers (iOS / Android)               │
+│ Phase 1: Core Foundation & Cryptographic Primitives (p: 1.0.0)           │
+│  ├─ s/p: 0.1.0 - IPC Scaffolding & Domain Models                        │
+│  ├─ s/p: 0.2.0 - Pure Dart DER Parser & Low-S Curve Math                │
+│  └─ s/p: 0.3.0 - Direct Native Hardware Enclave Signers (iOS / Android) │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │ Base types & crypto ready
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Phase 2: WebAuthn Passkey Engine & Protocol Scanners (The Protocol Layer)│
-│  - Native OS Passkey Bridges (ASAuthorization / CredentialManager / Web)│
-│  - ClientDataJSON UTF-8 Offset Scanner & AuthenticatorData Parser       │
-│  - Relying Party (RP ID) & Mobile Domain Association Verifier           │
+│ Phase 2: WebAuthn Passkey Engine & Protocol Scanners (p: 2.0.0)         │
+│  ├─ s/p: 1.1.0 - Native OS Passkey Bridges (iOS / Android / Web)        │
+│  ├─ s/p: 1.2.0 - ClientDataJSON Offset Scanner & AuthenticatorData      │
+│  └─ s/p: 1.3.0 - Relying Party & Mobile Domain Association Verifier     │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │ WebAuthn signatures & offsets ready
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Phase 3: Smart Account Adapters & Production Launch (Integration Layer) │
-│  - Universal ERC-4337 Adapters (Safe, ZeroDev, Biconomy, EIP-7212)      │
-│  - Multi-Signer Lifecycle & Recovery UserOp Generators                  │
-│  - Testnet Verification (Base/Arbitrum), Audit & pub.dev Release        │
+│ Phase 3: Smart Account Adapters & Production Launch (p: 3.0.0)          │
+│  ├─ s/p: 2.1.0 - Universal ERC-4337 Adapters (Safe, ZeroDev, Biconomy)  │
+│  ├─ s/p: 2.2.0 - Multi-Signer Lifecycle & Recovery UserOp Generators    │
+│  └─ s/p: 2.3.0 - Testnet Verification (Base/Arbitrum), Audit & Release  │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Phase 1: Core Foundation & Cryptographic Primitives (The Base Engine)
-> **Goal**: Build the zero-dependency mathematical and IPC foundation. Ensure all curve arithmetic, DER decoding, low-$S$ normalization, and direct enclave access are 100% verified before introducing WebAuthn or smart account layers.
+### Phase 1: Core Foundation & Cryptographic Primitives
+- **Phase Milestone Version**: `1.0.0`
+- **GitHub Label**: `p: 1.0.0` (Color: `#7F00FF` - Violet)
+- **Goal**: Build the zero-dependency mathematical and IPC foundation. Ensure all curve arithmetic, DER decoding, low-$S$ normalization, and direct enclave access are 100% verified before introducing WebAuthn or smart account layers.
 
 #### Sub-Phase 1.1: Architecture Foundation, Domain Models & Pigeon IPC
+- **Milestone Version**: `0.1.0`
+- **GitHub Label**: `s/p: 0.1.0` (Color: `#4B0082` - Indigo)
 - **Objective**: Establish the federated plugin structure, domain models, and type-safe platform IPC contracts.
 - **Key Deliverables**:
   - Federated plugin structure (`chainkey`, `chainkey_platform_interface`, `chainkey_ios`, `chainkey_android`, `chainkey_web`).
@@ -85,6 +120,8 @@ The implementation is structured strictly in chronological dependency order:
   - `flutter pub run pigeon` generates clean, type-safe Swift, Kotlin, and Dart bindings without manual glue code.
 
 #### Sub-Phase 1.2: Pure Dart Cryptographic Engine (ASN.1 DER Parser & Curve Arithmetic)
+- **Milestone Version**: `0.2.0`
+- **GitHub Label**: `s/p: 0.2.0` (Color: `#0000FF` - Blue)
 - **Objective**: Implement standalone, zero-external-dependency cryptographic utilities in pure Dart.
 - **Key Deliverables**:
   - **ASN.1 DER Signature Unpacker**:
@@ -104,6 +141,8 @@ The implementation is structured strictly in chronological dependency order:
   - 100% test coverage on pure Dart crypto unit tests against Wycheproof test vectors, RFC 6979 vectors, and Ethereum testnet vectors.
 
 #### Sub-Phase 1.3: Direct Native Hardware Enclave Driver (Secure Enclave & StrongBox)
+- **Milestone Version**: `0.3.0`
+- **GitHub Label**: `s/p: 0.3.0` (Color: `#00A877` - Cyan / Blue-Green)
 - **Objective**: Implement direct, non-exportable hardware key generation and raw 32-byte digest signing for iOS and Android.
 - **Key Deliverables**:
   - **iOS Native Engine (`chainkey_ios`)**:
@@ -121,10 +160,14 @@ The implementation is structured strictly in chronological dependency order:
 
 ---
 
-### Phase 2: WebAuthn Passkey Engine & Protocol Scanners (The Protocol Layer)
-> **Goal**: Layer W3C WebAuthn / FIDO2 Passkey credential generation, assertion, and client-side zero-copy offset scanning on top of the Phase 1 base.
+### Phase 2: WebAuthn Passkey Engine & Protocol Scanners
+- **Phase Milestone Version**: `2.0.0`
+- **GitHub Label**: `p: 2.0.0` (Color: `#008000` - Green)
+- **Goal**: Layer W3C WebAuthn / FIDO2 Passkey credential generation, assertion, and client-side zero-copy offset scanning on top of the Phase 1 base.
 
 #### Sub-Phase 2.1: Native OS Passkey Credential Bridges
+- **Milestone Version**: `1.1.0`
+- **GitHub Label**: `s/p: 1.1.0` (Color: `#7CFC00` - Yellow-Green)
 - **Objective**: Implement Passkey registration and assertion using platform credential managers supporting cloud synchronization (iCloud Keychain & Google Password Manager).
 - **Key Deliverables**:
   - **iOS Passkey Engine**:
@@ -143,6 +186,8 @@ The implementation is structured strictly in chronological dependency order:
   - Seamless passkey registration and assertion across iOS 16+, Android 9+ (API 28+ with CredentialManager), and modern desktop/mobile web browsers.
 
 #### Sub-Phase 2.2: Zero-Copy ClientDataJSON Offset Scanner & AuthenticatorData Parser
+- **Milestone Version**: `1.2.0`
+- **GitHub Label**: `s/p: 1.2.0` (Color: `#FFFF00` - Yellow)
 - **Objective**: Eliminate EVM gas penalties by extracting exact UTF-8 byte offsets on the client side before building the signature.
 - **Key Deliverables**:
   - **AuthenticatorData Parser**:
@@ -157,6 +202,8 @@ The implementation is structured strictly in chronological dependency order:
   - Client-computed offsets match exact EVM `mload` slice locations across arbitrary JSON key orderings, whitespace variations, and string escapes.
 
 #### Sub-Phase 2.3: Relying Party (RP ID) & Mobile Domain Association Diagnostic Tooling
+- **Milestone Version**: `1.3.0`
+- **GitHub Label**: `s/p: 1.3.0` (Color: `#FFD700` - Amber / Gold)
 - **Objective**: Prevent native mobile WebAuthn failures caused by missing or misconfigured domain associations.
 - **Key Deliverables**:
   - Diagnostic CLI tool: `chainkey verify-domain --rp-id <domain> --bundle-id <id> --package-name <pkg>`.
@@ -169,10 +216,14 @@ The implementation is structured strictly in chronological dependency order:
 
 ---
 
-### Phase 3: Smart Account Adapters, ERC-4337 Serialization & Production Launch (Integration Layer)
-> **Goal**: Provide out-of-the-box adapters for standard Account Abstraction frameworks, multi-signer management, live testnet validation, and pub.dev publication.
+### Phase 3: Smart Account Adapters, ERC-4337 Serialization & Production Launch
+- **Phase Milestone Version**: `3.0.0`
+- **GitHub Label**: `p: 3.0.0` (Color: `#FF7F00` - Orange)
+- **Goal**: Provide out-of-the-box adapters for standard Account Abstraction frameworks, multi-signer management, live testnet validation, and pub.dev publication.
 
 #### Sub-Phase 3.1: Universal Smart Account Signature Formatters (`chainkey/adapters`)
+- **Milestone Version**: `2.1.0`
+- **GitHub Label**: `s/p: 2.1.0` (Color: `#FF4500` - Orange-Red)
 - **Objective**: Deliver turnkey ABI encoding helpers for standard ERC-4337 smart contract accounts and precompiles.
 - **Key Deliverables**:
   - **Safe Passkey Module Adapter** (`SafePasskeyAdapter`):
@@ -189,6 +240,8 @@ The implementation is structured strictly in chronological dependency order:
   - ABI-encoded bytes validate 100% on deployed verifier smart contracts without signature formatting errors.
 
 #### Sub-Phase 3.2: Multi-Signer Lifecycle & Recovery UserOp Generators
+- **Milestone Version**: `2.2.0`
+- **GitHub Label**: `s/p: 2.2.0` (Color: `#DC143C` - Crimson)
 - **Objective**: Abstract smart account multi-device linking and hardware key lifecycle management.
 - **Key Deliverables**:
   - UserOp helper to register a new `P256PublicKey` as an authorized signer on an existing smart account.
@@ -200,6 +253,8 @@ The implementation is structured strictly in chronological dependency order:
   - End-to-end multi-device pairing: user can register a new hardware key on Device B authorized by an existing passkey on Device A.
 
 #### Sub-Phase 3.3: Live Testnet Verification, Security Audit & Package Launch
+- **Milestone Version**: `2.3.0`
+- **GitHub Label**: `s/p: 2.3.0` (Color: `#FF0000` - Red)
 - **Objective**: Conduct rigorous end-to-end on-chain testing, security verification, and release to the Flutter community.
 - **Key Deliverables**:
   - **Live Testnet Integration Suite**:
@@ -222,25 +277,15 @@ The implementation is structured strictly in chronological dependency order:
 ## Chronological Work Breakdown Structure (WBS) & Dependency Graph
 
 ```text
-[1.1 Pigeon IPC & Models] ────► [1.2 Pure Dart Crypto: DER & Low-S] ────► [1.3 Native Enclave Signer]
-                                                                                   │
-┌──────────────────────────────────────────────────────────────────────────────────┘
-▼
-[2.1 Native Passkey Bridges] ──► [2.2 ClientDataJSON Offset Engine] ──► [2.3 Domain Association Tooling]
-                                                                                   │
-┌──────────────────────────────────────────────────────────────────────────────────┘
-▼
-[3.1 Universal AA Adapters] ───► [3.2 Multi-Signer Lifecycle] ────────► [3.3 Testnet E2E & pub.dev]
+[s/p: 0.1.0 Scaffolding] ──► [s/p: 0.2.0 DER & Low-S Math] ──► [s/p: 0.3.0 Native Enclave]
+                                                                        │
+                                                               ┌────────┘
+                                                               ▼ [p: 1.0.0 Milestone]
+[s/p: 1.1.0 Passkey Bridges] ──► [s/p: 1.2.0 Offset Scanner] ──► [s/p: 1.3.0 Domain Tooling]
+                                                                        │
+                                                               ┌────────┘
+                                                               ▼ [p: 2.0.0 Milestone]
+[s/p: 2.1.0 AA Adapters] ──────► [s/p: 2.2.0 Multi-Signer] ────► [s/p: 2.3.0 Testnet & Launch]
+                                                                        │
+                                                                        ▼ [p: 3.0.0 Milestone]
 ```
-
----
-
-## Milestones & Tracking Matrix
-
-| Milestone | Key Deliverables | Expected Completion | Dependencies |
-| :--- | :--- | :---: | :--- |
-| **M1: Cryptographic Foundation** | Scaffolding, Pigeon APIs, pure Dart DER unpacker, Low-$S$ math, unit tests. | End of Sprint 1 | None |
-| **M2: Direct Enclave Engine** | iOS Secure Enclave & Android StrongBox/KeyStore native drivers, raw 32B signing. | End of Sprint 2 | M1 |
-| **M3: WebAuthn Passkeys & Offsets** | iOS ASAuthorization, Android CredentialManager, Web interop, clientDataJSON offset scanner. | End of Sprint 4 | M1, M2 |
-| **M4: AA Adapters & Domain Tools** | Safe, ZeroDev, Biconomy adapters, EIP-7212 encoder, domain check CLI. | End of Sprint 5 | M3 |
-| **M5: Testnet Validation & Release**| Live UserOp tests on Base Sepolia, example app, pub.dev deployment. | End of Sprint 6 | M4 |
