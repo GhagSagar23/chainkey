@@ -1,0 +1,37 @@
+name: Security Vulnerability Report
+description: Guidance and instructions for reporting a security vulnerability privately
+title: "[Security]: "
+labels: ["security"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## :warning: DO NOT REPORT SECURITY VULNERABILITIES PUBLICLY :warning:
+
+        If you believe you have discovered a security vulnerability in `chainkey` (such as hardware enclave key exfiltration, biometric bypass, signature malleability, attestation replay, or memory leakage), **DO NOT submit this public issue**.
+
+        Public issues are visible to everyone and expose users and smart contract accounts to exploitation before a patch can be developed and distributed.
+
+  - type: markdown
+    attributes:
+      value: |
+        ### How to Report Privately
+
+        Please use one of the following private reporting channels:
+
+        1. **GitHub Private Vulnerability Reporting (Recommended)**:
+           Submit a report via [GitHub Security Advisories](https://github.com/GhagSagar23/chainkey/security/advisories/new).
+
+        2. **Direct Encrypted / Private Email**:
+           Send an email to **Sagar Ghag** at [`sagar.ghag23@yahoo.com`](mailto:sagar.ghag23@yahoo.com) with the subject prefix `[SECURITY] chainkey - <summary>`.
+
+        For full details on our response SLAs, disclosure process, and cryptographic scope, please read our [Security Policy (SECURITY.md)](https://github.com/GhagSagar23/chainkey/blob/master/SECURITY.md).
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: I understand that public issues must NOT be used for security disclosures, and I will report this vulnerability privately through the channels above.
+          required: true

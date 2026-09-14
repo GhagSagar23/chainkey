@@ -1,0 +1,96 @@
+name: Bug Report
+description: File a bug or unexpected behavior in chainkey
+title: "[Bug]: "
+labels: ["bug", "triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please search existing issues first to avoid duplicates.
+        *If you have discovered a potential security vulnerability, please refer to our [Security Policy](https://github.com/GhagSagar23/chainkey/blob/master/SECURITY.md) instead.*
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Affected Package
+      description: Which sub-package is experiencing this issue?
+      multiple: true
+      options:
+        - "packages/chainkey (App-facing API)"
+        - "packages/chainkey_platform_interface"
+        - "packages/chainkey_android (Android Keystore / StrongBox)"
+        - "packages/chainkey_ios (Apple Secure Enclave)"
+        - "packages/chainkey_web (WebAuthn / Passkeys)"
+        - "packages/chainkey/example"
+        - "Other / Tooling"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+      placeholder: "When calling generateHardwareKey with requireStrongBox: true, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior or minimal code snippet.
+      placeholder: |
+        1. Initialize chainkey in Flutter app
+        2. Execute `Chainkey.instance.generateHardwareKey(...)`
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "Key generation succeeds and returns an EnclavePublicKey."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior & Logs
+      description: What actually happened? Include stack traces or console output.
+      render: shell
+      placeholder: |
+        PlatformException(ENCLAVE_ERROR, ...)
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment & Hardware Details
+      description: Output of `flutter doctor -v` and target device details.
+      placeholder: |
+        - Flutter version: 3.22.x
+        - Dart version: 3.5.x
+        - Device: Google Pixel 8 Pro / iPhone 15 Pro / Chrome 124
+        - OS Version: Android 14 / iOS 17.5 / macOS
+        - Hardware Isolation Level: StrongBox / TEE / Secure Enclave / WebCrypto
+      render: markdown
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate.
+          required: true
+        - label: I am using a supported Flutter version (>= 3.22.0).
+          required: true
+        - label: This is not a security vulnerability (security issues must follow [SECURITY.md](https://github.com/GhagSagar23/chainkey/blob/master/SECURITY.md)).
+          required: true
