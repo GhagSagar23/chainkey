@@ -67,13 +67,16 @@ class P256PublicKey {
         hexString.startsWith('0x') ? hexString.substring(2) : hexString;
     if (cleanHex.length != 130) {
       throw ArgumentError(
-          'Hex string must represent exactly 65 bytes (130 characters)');
+        'Hex string must represent exactly 65 bytes (130 characters)',
+      );
     }
 
     final uncompressedBytes = Uint8List(65);
     for (var i = 0; i < 65; i++) {
-      uncompressedBytes[i] =
-          int.parse(cleanHex.substring(i * 2, i * 2 + 2), radix: 16);
+      uncompressedBytes[i] = int.parse(
+        cleanHex.substring(i * 2, i * 2 + 2),
+        radix: 16,
+      );
     }
 
     final x = Uint8List.view(uncompressedBytes.buffer, 1, 32);

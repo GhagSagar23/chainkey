@@ -40,13 +40,16 @@ class P256Signature {
         hexString.startsWith('0x') ? hexString.substring(2) : hexString;
     if (cleanHex.length != 128) {
       throw ArgumentError(
-          'Hex string must represent exactly 64 bytes (128 characters)');
+        'Hex string must represent exactly 64 bytes (128 characters)',
+      );
     }
 
     final compactBytes = Uint8List(64);
     for (var i = 0; i < 64; i++) {
-      compactBytes[i] =
-          int.parse(cleanHex.substring(i * 2, i * 2 + 2), radix: 16);
+      compactBytes[i] = int.parse(
+        cleanHex.substring(i * 2, i * 2 + 2),
+        radix: 16,
+      );
     }
 
     final r = Uint8List.view(compactBytes.buffer, 0, 32);
