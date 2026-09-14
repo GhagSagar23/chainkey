@@ -1,39 +1,70 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# chainkey_platform_interface
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+A common platform interface for the [`chainkey`](https://pub.dev/packages/chainkey) federated plugin.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+This package defines the core abstractions, data models, exceptions, and Pigeon-generated host API contracts implemented by platform-specific packages (`chainkey_android`, `chainkey_ios`, and `chainkey_web`).
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+---
 
-## Features
+## Architecture Overview
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+`chainkey` uses the [federated plugin architecture](https://docs.flutter.dev/packages-and-plugins/developing-packages#federated-plugins). Platform implementations extend `ChainkeyPlatform` to handle native hardware-isolated security enclaves and WebAuthn authenticators:
 
-## Getting started
+- **App-facing package**: [`chainkey`](https://pub.dev/packages/chainkey)
+- **Platform interface**: `chainkey_platform_interface` (this package)
+- **Android implementation**: [`chainkey_android`](https://pub.dev/packages/chainkey_android)
+- **iOS implementation**: [`chainkey_ios`](https://pub.dev/packages/chainkey_ios)
+- **Web implementation**: [`chainkey_web`](https://pub.dev/packages/chainkey_web)
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+---
 
-## Usage
+## Core Models
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+### `HardwareIsolationLevel`
+Defines the hardware security boundary protecting the cryptographic keypair:
+- `secureEnclave`: Apple Secure Enclave Processor (SEP).
+- `strongBox`: Dedicated hardware security chip (Android StrongBox Keymaster / KeyMint).
+- `tee`: Trusted Execution Environment (Android ARM TrustZone).
+- `software`: Platform keystore or browser-managed software sandbox.
+
+### `EnclavePublicKey`
+Represents an elliptic curve public key generated within the enclave:
+- `x`: 32-byte big-endian X-coordinate on the NIST P-256 (secp256r1) curve.
+- `y`: 32-byte big-endian Y-coordinate on the NIST P-256 curve.
+- `uncompressedBytes`: 65-byte uncompressed SEC1 representation (`0x04 || X || Y`).
+- `isolationLevel`: Confirmed isolation level.
+
+### `DerSignatureResult`
+Cryptographic signature produced by the enclave:
+- `rawDerSignature`: ASN.1 DER-encoded signature bytes.
+- `r`: 32-byte big-endian scalar component.
+- `s`: 32-byte big-endian scalar component.
+- `isLowS`: Indicates whether $s$ is normalized to low-$S$ ($s \le n/2$) per BIP-62 / EIP-2.
+
+---
+
+## Usage for Platform Implementers
+
+To implement a new platform for `chainkey`, extend `ChainkeyPlatform`:
 
 ```dart
-const like = 'sample';
+import 'package:chainkey_platform_interface/chainkey_platform_interface.dart';
+
+class CustomChainkeyPlatform extends ChainkeyPlatform {
+  static void registerWith() {
+    ChainkeyPlatform.instance = CustomChainkeyPlatform();
+  }
+
+  @override
+  Future<bool> isHardwareIsolationSupported(HardwareIsolationLevel level) async {
+    // Custom platform isolation check
+    return true;
+  }
+}
 ```
 
-## Additional information
+---
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## Issues & Contributing
+
+For issues, bug reports, and feature requests, please visit the [Chainkey GitHub Repository](https://github.com/GhagSagar23/chainkey/issues).

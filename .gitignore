@@ -29,6 +29,8 @@ migrate_working_dir/
 .pub/
 /build/
 ephemeral/
+coverage/
+**/coverage/
 
 # Symbol processing related
 **/symbols.nativetmp

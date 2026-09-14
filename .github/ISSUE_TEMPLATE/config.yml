@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability Disclosure
+    url: https://github.com/GhagSagar23/chainkey/security/advisories/new
+    about: Please report security vulnerabilities through private vulnerability reporting.
+  - name: Community Discussions & Support
+    url: https://github.com/GhagSagar23/chainkey/discussions
+    about: Ask questions, get help, or discuss features with the community.

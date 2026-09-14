@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
 Object? _extractReplyValueOrThrow(
-    List<Object?>? replyList,
-    String channelName, {
-    required bool isNullValid,
+  List<Object?>? replyList,
+  String channelName, {
+  required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -96,15 +96,17 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
-
 /// Hardware security isolation tier backing the cryptographic key.
 enum EnclaveIsolationLevel {
   /// Apple Secure Enclave (SEP) hardware isolated environment.
   secureEnclave,
+
   /// Android StrongBox Keymaster/KeyMint dedicated hardware security chip.
   strongBox,
+
   /// Android Trusted Execution Environment (TEE).
   tee,
+
   /// Software-backed or browser-managed key (e.g. software sandbox or WebAuthn).
   software;
 }
@@ -113,8 +115,10 @@ enum EnclaveIsolationLevel {
 enum KeyAttestationFormat {
   /// Android KeyStore X.509 attestation certificate chain (ASN.1 DER encoded).
   androidKeyStore,
+
   /// Apple DeviceCheck / AppAttest assertion and CBOR attestation object.
   appleAppAttest,
+
   /// No hardware attestation format available.
   none;
 }
@@ -156,7 +160,8 @@ class KeyGenerationRequest {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static KeyGenerationRequest decode(Object result) {
     result as List<Object?>;
@@ -178,7 +183,12 @@ class KeyGenerationRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(requireUserPresence, other.requireUserPresence) && _deepEquals(requireStrongBox, other.requireStrongBox) && _deepEquals(invalidatedByBiometricEnrollment, other.invalidatedByBiometricEnrollment) && _deepEquals(accessGroup, other.accessGroup);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(requireUserPresence, other.requireUserPresence) &&
+        _deepEquals(requireStrongBox, other.requireStrongBox) &&
+        _deepEquals(invalidatedByBiometricEnrollment,
+            other.invalidatedByBiometricEnrollment) &&
+        _deepEquals(accessGroup, other.accessGroup);
   }
 
   @override
@@ -227,7 +237,8 @@ class EnclavePublicKey {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static EnclavePublicKey decode(Object result) {
     result as List<Object?>;
@@ -249,7 +260,11 @@ class EnclavePublicKey {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(x, other.x) && _deepEquals(y, other.y) && _deepEquals(uncompressedBytes, other.uncompressedBytes) && _deepEquals(isolationLevel, other.isolationLevel);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(x, other.x) &&
+        _deepEquals(y, other.y) &&
+        _deepEquals(uncompressedBytes, other.uncompressedBytes) &&
+        _deepEquals(isolationLevel, other.isolationLevel);
   }
 
   @override
@@ -298,7 +313,8 @@ class PlatformPromptOptions {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static PlatformPromptOptions decode(Object result) {
     result as List<Object?>;
@@ -320,7 +336,11 @@ class PlatformPromptOptions {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(title, other.title) && _deepEquals(subtitle, other.subtitle) && _deepEquals(promptDescription, other.promptDescription) && _deepEquals(negativeButtonText, other.negativeButtonText) && _deepEquals(confirmationRequired, other.confirmationRequired);
+    return _deepEquals(title, other.title) &&
+        _deepEquals(subtitle, other.subtitle) &&
+        _deepEquals(promptDescription, other.promptDescription) &&
+        _deepEquals(negativeButtonText, other.negativeButtonText) &&
+        _deepEquals(confirmationRequired, other.confirmationRequired);
   }
 
   @override
@@ -359,7 +379,8 @@ class SignDigestRequest {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static SignDigestRequest decode(Object result) {
     result as List<Object?>;
@@ -379,7 +400,9 @@ class SignDigestRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(hash32, other.hash32) && _deepEquals(promptOptions, other.promptOptions);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(hash32, other.hash32) &&
+        _deepEquals(promptOptions, other.promptOptions);
   }
 
   @override
@@ -429,7 +452,8 @@ class DerSignatureResult {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static DerSignatureResult decode(Object result) {
     result as List<Object?>;
@@ -451,7 +475,11 @@ class DerSignatureResult {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(rawDerSignature, other.rawDerSignature) && _deepEquals(r, other.r) && _deepEquals(s, other.s) && _deepEquals(isLowS, other.isLowS);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(rawDerSignature, other.rawDerSignature) &&
+        _deepEquals(r, other.r) &&
+        _deepEquals(s, other.s) &&
+        _deepEquals(isLowS, other.isLowS);
   }
 
   @override
@@ -485,7 +513,8 @@ class AttestationRequest {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static AttestationRequest decode(Object result) {
     result as List<Object?>;
@@ -504,7 +533,8 @@ class AttestationRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(challenge, other.challenge);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(challenge, other.challenge);
   }
 
   @override
@@ -548,7 +578,8 @@ class AttestationResult {
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static AttestationResult decode(Object result) {
     result as List<Object?>;
@@ -569,7 +600,10 @@ class AttestationResult {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(keyAlias, other.keyAlias) && _deepEquals(certificateChain, other.certificateChain) && _deepEquals(format, other.format) && _deepEquals(isolationLevel, other.isolationLevel);
+    return _deepEquals(keyAlias, other.keyAlias) &&
+        _deepEquals(certificateChain, other.certificateChain) &&
+        _deepEquals(format, other.format) &&
+        _deepEquals(isolationLevel, other.isolationLevel);
   }
 
   @override
@@ -582,7 +616,6 @@ class AttestationResult {
   }
 }
 
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -590,31 +623,31 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is EnclaveIsolationLevel) {
+    } else if (value is EnclaveIsolationLevel) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    }    else if (value is KeyAttestationFormat) {
+    } else if (value is KeyAttestationFormat) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    }    else if (value is KeyGenerationRequest) {
+    } else if (value is KeyGenerationRequest) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    }    else if (value is EnclavePublicKey) {
+    } else if (value is EnclavePublicKey) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    }    else if (value is PlatformPromptOptions) {
+    } else if (value is PlatformPromptOptions) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is SignDigestRequest) {
+    } else if (value is SignDigestRequest) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is DerSignatureResult) {
+    } else if (value is DerSignatureResult) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is AttestationRequest) {
+    } else if (value is AttestationRequest) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is AttestationResult) {
+    } else if (value is AttestationResult) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
     } else {
@@ -657,158 +690,164 @@ class HardwareKeyHostApi {
   /// available for dependency injection. If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   HardwareKeyHostApi({
-      BinaryMessenger? binaryMessenger, 
-      String messageChannelSuffix = '', 
-      })
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  })  : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
 
   final BinaryMessenger? pigeonVar_binaryMessenger;
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-
   /// Checks whether a specific hardware isolation tier is available on the physical device.
   Future<bool> isHardwareIsolationSupported(EnclaveIsolationLevel level) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.isHardwareIsolationSupported$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.isHardwareIsolationSupported$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[level]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[level]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   /// Generates a non-exportable NIST P-256 keypair inside the hardware security enclave
   /// (Secure Enclave on iOS, StrongBox/TEE on Android).
   Future<EnclavePublicKey> generateKeyPair(KeyGenerationRequest request) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.generateKeyPair$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.generateKeyPair$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[request]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as EnclavePublicKey;
   }
 
   /// Signs a raw 32-byte digest (e.g. ERC-4337 UserOpHash) directly using the hardware key.
   /// Returns the raw ASN.1 DER signature along with pre-unpacked (r, s) scalars.
   Future<DerSignatureResult> signDigest(SignDigestRequest request) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.signDigest$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.signDigest$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[request]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as DerSignatureResult;
   }
 
   /// Requests hardware attestation for the key, embedding [request.challenge] into the certificate
   /// chain to verify hardware backing.
   Future<AttestationResult> attestKey(AttestationRequest request) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.attestKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.attestKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[request]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as AttestationResult;
   }
 
   /// Retrieves the public key coordinates for an existing keypair by [keyAlias].
   Future<EnclavePublicKey> getPublicKey(String keyAlias) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.getPublicKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.getPublicKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[keyAlias]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[keyAlias]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as EnclavePublicKey;
   }
 
   /// Checks if a keypair exists for the specified [keyAlias].
   Future<bool> hasKey(String keyAlias) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.hasKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.hasKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[keyAlias]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[keyAlias]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 
   /// Deletes the keypair identified by [keyAlias] from the hardware keystore.
   Future<bool> deleteKey(String keyAlias) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.deleteKey$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.chainkey_platform_interface.HardwareKeyHostApi.deleteKey$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[keyAlias]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[keyAlias]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as bool;
   }
 }
