@@ -61,7 +61,8 @@ class MethodChannelChainkey extends ChainkeyPlatform {
   }
 
   @override
-  Future<bool> isHardwareIsolationSupported(HardwareIsolationLevel level) async {
+  Future<bool> isHardwareIsolationSupported(
+      HardwareIsolationLevel level) async {
     final result = await methodChannel.invokeMethod<bool>(
       'isHardwareIsolationSupported',
       {'level': level.name},

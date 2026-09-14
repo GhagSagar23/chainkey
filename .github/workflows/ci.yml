@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-and-analyze:
+    name: Code Style & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Melos
+        run: dart pub global activate melos
+
+      - name: Melos Bootstrap
+        run: melos bootstrap
+
+      - name: Check Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Code
+        run: flutter analyze --fatal-infos
+
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Melos
+        run: dart pub global activate melos
+
+      - name: Melos Bootstrap
+        run: melos bootstrap
+
+      - name: Run Dart & Flutter VM Tests (with coverage)
+        run: melos run test:coverage
+
+      - name: Run Web Platform Tests
+        run: melos run test:web
+
+      - name: Verify Coverage Threshold
+        run: ./scripts/check_coverage.sh 15
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: packages/*/coverage/lcov.info
+          if-no-files-found: ignore
+
+  lint-ios:
+    name: Native iOS Lint (SwiftLint)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run SwiftLint
+        run: |
+          if ! command -v swiftlint &> /dev/null; then
+            echo "Installing SwiftLint via brew..."
+            brew install swiftlint
+          fi
+          swiftlint lint --strict --config .swiftlint.yml packages/chainkey_ios/ios
+
+  lint-android:
+    name: Native Android Lint (ktlint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Download ktlint
+        run: |
+          curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.3.1/ktlint
+          chmod a+x ktlint
+          sudo mv ktlint /usr/local/bin/
+
+      - name: Run ktlint
+        run: |
+          ktlint "packages/chainkey_android/android/src/**/*.kt" "!packages/chainkey_android/android/src/**/KeyApi.g.kt" --editorconfig=.editorconfig --reporter=plain

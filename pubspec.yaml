@@ -20,12 +20,28 @@ dev_dependencies:
 melos:
   scripts:
     analyze:
-      run: melos exec -- dart analyze .
-      description: Run dart analyze across all packages.
+      run: melos exec -- flutter analyze --fatal-infos
+      description: Run flutter analyze across all packages.
+
+    format:check:
+      run: dart format --output=none --set-exit-if-changed .
+      description: Check Dart code formatting across the repository.
+
+    format:
+      run: dart format .
+      description: Format Dart code across the repository.
 
     test:
-      run: melos exec --dir-exists="test" -- flutter test
-      description: Run flutter test in all packages with a test/ directory.
+      run: melos exec --ignore="chainkey_web" --dir-exists="test" -- flutter test
+      description: Run flutter test in all non-web packages with a test/ directory.
+
+    test:web:
+      run: melos exec --scope="chainkey_web" -- flutter test --platform chrome
+      description: Run flutter web tests on chrome platform.
+
+    test:coverage:
+      run: melos exec --ignore="chainkey_web" --dir-exists="test" -- flutter test --coverage
+      description: Run flutter test with coverage generation for non-web packages.
 
     pigeon:
       run: dart run pigeon --input pigeons/key_api.dart

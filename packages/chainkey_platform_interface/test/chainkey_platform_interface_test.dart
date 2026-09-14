@@ -50,8 +50,8 @@ void main() {
         throwsUnimplementedError,
       );
       expect(
-        () => mock.isHardwareIsolationSupported(
-            HardwareIsolationLevel.secureEnclave),
+        () => mock
+            .isHardwareIsolationSupported(HardwareIsolationLevel.secureEnclave),
         throwsUnimplementedError,
       );
     });

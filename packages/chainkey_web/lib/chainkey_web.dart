@@ -36,7 +36,8 @@ class ChainkeyWeb extends ChainkeyPlatform {
   }
 
   @override
-  Future<bool> isHardwareIsolationSupported(HardwareIsolationLevel level) async {
+  Future<bool> isHardwareIsolationSupported(
+      HardwareIsolationLevel level) async {
     // Web only supports browser/software-backed WebAuthn credentials
     return level == HardwareIsolationLevel.software;
   }
