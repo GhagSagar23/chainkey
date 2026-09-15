@@ -40,4 +40,28 @@ class BiometricPromptOptions {
       confirmationRequired: map['confirmationRequired'] as bool? ?? true,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BiometricPromptOptions &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          subtitle == other.subtitle &&
+          description == other.description &&
+          negativeButtonText == other.negativeButtonText &&
+          confirmationRequired == other.confirmationRequired;
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      subtitle.hashCode ^
+      description.hashCode ^
+      negativeButtonText.hashCode ^
+      confirmationRequired.hashCode;
+
+  @override
+  String toString() {
+    return 'BiometricPromptOptions(title: $title, subtitle: $subtitle, description: $description, negativeButtonText: $negativeButtonText, confirmationRequired: $confirmationRequired)';
+  }
 }
