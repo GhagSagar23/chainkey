@@ -62,13 +62,21 @@ class P256Signature {
     );
   }
 
+  /// Returns the 64-byte compact signature `(r || s)`.
+  Uint8List get compactBytes {
+    final compact = Uint8List(64);
+    compact.setRange(0, 32, r);
+    compact.setRange(32, 64, s);
+    return compact;
+  }
+
   /// Returns a standard lowercase hex string (without 0x) of the compact 64-byte signature `(r || s)`.
   String toHex() {
-    final compactBytes = Uint8List(64);
-    compactBytes.setRange(0, 32, r);
-    compactBytes.setRange(32, 64, s);
     return compactBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
+
+  /// Returns a standard lowercase hex string (without 0x) of the compact 64-byte signature `(r || s)`.
+  String get compactHex => toHex();
 
   @override
   bool operator ==(Object other) =>

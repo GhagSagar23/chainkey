@@ -98,6 +98,9 @@ class P256PublicKey {
         .join();
   }
 
+  /// Returns a standard lowercase hex string (without 0x) of the uncompressed public key.
+  String get uncompressedHex => toHex();
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

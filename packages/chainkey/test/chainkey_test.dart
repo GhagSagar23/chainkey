@@ -12,11 +12,13 @@ class MockChainkeyPlatform
     required String keyAlias,
     bool requireUserPresence = true,
   }) async {
+    final bytes = Uint8List(65);
+    bytes[0] = 0x04;
     return P256PublicKey(
       keyAlias: keyAlias,
       x: Uint8List(32),
       y: Uint8List(32),
-      uncompressedBytes: Uint8List(65),
+      uncompressedBytes: bytes,
       isolationLevel: HardwareIsolationLevel.secureEnclave,
     );
   }
