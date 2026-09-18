@@ -109,4 +109,4 @@ jobs:
 
       - name: Run ktlint
         run: |
-          ktlint "packages/chainkey_android/android/src/**/*.kt" "!packages/chainkey_android/android/src/**/KeyApi.g.kt" --editorconfig=.editorconfig --reporter=plain
+          ktlint "packages/chainkey_android/android/src/**/*.kt" "!packages/chainkey_android/android/src/**/KeyApi.g.kt" "!packages/chainkey_android/android/src/**/ChainkeyApi.g.kt" --editorconfig=.editorconfig --reporter=plain

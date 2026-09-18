@@ -44,5 +44,5 @@ melos:
       description: Run flutter test with coverage generation for non-web packages.
 
     pigeon:
-      run: dart run pigeon --input pigeons/key_api.dart
-      description: Regenerate type-safe Pigeon host and Dart bindings from pigeons/key_api.dart.
+      run: dart run pigeon --input pigeons/chainkey_api.dart
+      description: Regenerate type-safe Pigeon host and Dart bindings from pigeons/chainkey_api.dart.
