@@ -1,6 +1,6 @@
 name: chainkey_platform_interface
 description: Common platform interface for the chainkey federated plugin.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/GhagSagar23/chainkey/tree/master/packages/chainkey_platform_interface
 issue_tracker: https://github.com/GhagSagar23/chainkey/issues
 resolution: workspace
