@@ -11,6 +11,7 @@ export 'package:chainkey_platform_interface/chainkey_platform_interface.dart'
         ChainkeyException,
         UserCancelledException,
         KeyPermanentlyInvalidatedException,
+        BiometricsUnavailableException,
         HardwareEnclaveException,
         PasskeyException;
 
