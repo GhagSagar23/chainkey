@@ -3,6 +3,7 @@ included:
 
 excluded:
   - packages/chainkey_ios/ios/**/KeyApi.g.swift
+  - packages/chainkey_ios/ios/**/ChainkeyApi.g.swift
   - packages/chainkey_ios/ios/**/Pods
   - packages/chainkey_ios/ios/**/.symlinks
   - packages/chainkey_ios/ios/**/DerivedData
