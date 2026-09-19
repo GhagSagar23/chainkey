@@ -110,5 +110,63 @@ void main() {
         isFalse,
       );
     });
+
+    test('propagates typed ChainkeyException instances to caller', () async {
+      final failingPlatform = ThrowingChainkeyPlatform();
+      ChainkeyPlatform.instance = failingPlatform;
+
+      expect(
+        () => chainkey.generateHardwareKey(keyAlias: 'test'),
+        throwsA(isA<HardwareEnclaveException>()),
+      );
+      expect(
+        () => chainkey.signWithHardwareKey(
+          keyAlias: 'test',
+          hash32: Uint8List(32),
+        ),
+        throwsA(isA<UserCancelledException>()),
+      );
+      expect(
+        () => chainkey.deleteHardwareKey(keyAlias: 'test'),
+        throwsA(isA<KeyPermanentlyInvalidatedException>()),
+      );
+      expect(
+        () => chainkey
+            .isHardwareIsolationSupported(HardwareIsolationLevel.strongBox),
+        throwsA(isA<BiometricsUnavailableException>()),
+      );
+    });
   });
+}
+
+class ThrowingChainkeyPlatform
+    with MockPlatformInterfaceMixin
+    implements ChainkeyPlatform {
+  @override
+  Future<P256PublicKey> generateHardwareKey({
+    required String keyAlias,
+    bool requireUserPresence = true,
+  }) async {
+    throw const HardwareEnclaveException('Enclave failure');
+  }
+
+  @override
+  Future<P256Signature> signWithHardwareKey({
+    required String keyAlias,
+    required Uint8List hash32,
+    BiometricPromptOptions? promptOptions,
+  }) async {
+    throw const UserCancelledException();
+  }
+
+  @override
+  Future<bool> deleteHardwareKey({required String keyAlias}) async {
+    throw const KeyPermanentlyInvalidatedException();
+  }
+
+  @override
+  Future<bool> isHardwareIsolationSupported(
+      HardwareIsolationLevel level) async {
+    throw const BiometricsUnavailableException();
+  }
 }

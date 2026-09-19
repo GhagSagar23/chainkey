@@ -18,19 +18,23 @@ class ChainkeyIos extends ChainkeyPlatform {
     required String keyAlias,
     bool requireUserPresence = true,
   }) async {
-    final result = await methodChannel.invokeMapMethod<String, dynamic>(
-      'generateHardwareKey',
-      {
-        'keyAlias': keyAlias,
-        'requireUserPresence': requireUserPresence,
-      },
-    );
-    if (result == null) {
-      throw const HardwareEnclaveException(
-        'Failed to generate hardware key on iOS Secure Enclave',
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'generateHardwareKey',
+        {
+          'keyAlias': keyAlias,
+          'requireUserPresence': requireUserPresence,
+        },
       );
+      if (result == null) {
+        throw const HardwareEnclaveException(
+          'Failed to generate hardware key on iOS Secure Enclave',
+        );
+      }
+      return P256PublicKey.fromMap(result);
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
     }
-    return P256PublicKey.fromMap(result);
   }
 
   @override
@@ -39,38 +43,50 @@ class ChainkeyIos extends ChainkeyPlatform {
     required Uint8List hash32,
     BiometricPromptOptions? promptOptions,
   }) async {
-    final result = await methodChannel.invokeMapMethod<String, dynamic>(
-      'signWithHardwareKey',
-      {
-        'keyAlias': keyAlias,
-        'hash32': hash32,
-        if (promptOptions != null) 'promptOptions': promptOptions.toMap(),
-      },
-    );
-    if (result == null) {
-      throw const HardwareEnclaveException(
-        'Failed to sign with hardware key on iOS Secure Enclave',
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'signWithHardwareKey',
+        {
+          'keyAlias': keyAlias,
+          'hash32': hash32,
+          if (promptOptions != null) 'promptOptions': promptOptions.toMap(),
+        },
       );
+      if (result == null) {
+        throw const HardwareEnclaveException(
+          'Failed to sign with hardware key on iOS Secure Enclave',
+        );
+      }
+      return P256Signature.fromMap(result);
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
     }
-    return P256Signature.fromMap(result);
   }
 
   @override
   Future<bool> deleteHardwareKey({required String keyAlias}) async {
-    final result = await methodChannel.invokeMethod<bool>(
-      'deleteHardwareKey',
-      {'keyAlias': keyAlias},
-    );
-    return result ?? false;
+    try {
+      final result = await methodChannel.invokeMethod<bool>(
+        'deleteHardwareKey',
+        {'keyAlias': keyAlias},
+      );
+      return result ?? false;
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
   }
 
   @override
   Future<bool> isHardwareIsolationSupported(
       HardwareIsolationLevel level) async {
-    final result = await methodChannel.invokeMethod<bool>(
-      'isHardwareIsolationSupported',
-      {'level': level.name},
-    );
-    return result ?? false;
+    try {
+      final result = await methodChannel.invokeMethod<bool>(
+        'isHardwareIsolationSupported',
+        {'level': level.name},
+      );
+      return result ?? false;
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
   }
 }
