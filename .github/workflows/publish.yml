@@ -23,6 +23,10 @@ jobs:
   publish:
     name: Publish Packages to pub.dev
     runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for requesting the JWT for pub.dev OIDC
+      contents: write # Required for creating GitHub Releases
 
     steps:
       - name: Checkout repository
