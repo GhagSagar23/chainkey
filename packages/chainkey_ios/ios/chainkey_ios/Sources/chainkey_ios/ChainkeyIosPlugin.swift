@@ -76,15 +76,13 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
   }
 
   private func generateSecureEnclaveKey(keyAlias: String, requireUserPresence: Bool) throws -> [String: Any] {
-    // Delete any existing key with the same alias first
     let deleteQuery: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
-      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom
     ]
     SecItemDelete(deleteQuery as CFDictionary)
 
-    // Build access control flags
     var accessControlFlags: SecAccessControlCreateFlags = [.privateKeyUsage]
     if requireUserPresence {
       accessControlFlags.insert(.biometryAny)
@@ -106,8 +104,8 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
       kSecPrivateKeyAttrs as String: [
         kSecAttrIsPermanent as String: true,
         kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
-        kSecAttrAccessControl as String: accessControl,
-      ] as [String: Any],
+        kSecAttrAccessControl as String: accessControl
+      ] as [String: Any]
     ]
 
     var error: Unmanaged<CFError>?
@@ -156,17 +154,19 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     }
   }
 
+  // swiftlint:disable:next function_body_length
   private func signWithSecureEnclave(keyAlias: String, hash32: Data) throws -> [String: Any] {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-      kSecReturnRef as String: true,
+      kSecReturnRef as String: true
     ]
 
     var item: CFTypeRef?
     let status = SecItemCopyMatching(query as CFDictionary, &item)
-    guard status == errSecSuccess, let privateKey = item else {
+    guard status == errSecSuccess,
+          let keyRef = item else {
       if status == errSecItemNotFound {
         throw PlatformError(code: "KEY_NOT_FOUND", message: "No key found for alias: \(keyAlias)")
       }
@@ -174,18 +174,18 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     }
 
     // ponytail: kSecKeyAlgorithmECDSASignatureDigestX962SHA256 signs a raw
-    // 32-byte digest (despite the name suggesting SHA-256 — the "SHA256" refers
-    // to the curve parameter set, not rehashing). The Secure Enclave does NOT
-    // re-hash; it signs the digest directly.
+    // 32-byte digest (the "SHA256" refers to curve params, not rehashing).
     let algorithm = SecKeyAlgorithm.ecdsaSignatureDigestX962SHA256
+    // swiftlint:disable:next force_cast
+    let secKey = keyRef as! SecKey
 
-    guard SecKeyIsAlgorithmSupported(privateKey as! SecKey, .sign, algorithm) else {
+    guard SecKeyIsAlgorithmSupported(secKey, .sign, algorithm) else {
       throw PlatformError(code: "UNSUPPORTED_ALGORITHM", message: "ECDSA signing not supported for this key")
     }
 
     var error: Unmanaged<CFError>?
     guard let derSignature = SecKeyCreateSignature(
-      privateKey as! SecKey,
+      secKey,
       algorithm,
       hash32 as CFData,
       &error
@@ -209,12 +209,12 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     }
 
     let rawDer = derSignature as Data
-    let (r, s) = try parseDerSignature(rawDer)
+    let (rScalar, sScalar) = try DerParser.parseSignature(rawDer)
 
     return [
-      "r": FlutterStandardTypedData(bytes: r),
-      "s": FlutterStandardTypedData(bytes: s),
-      "rawDerSignature": FlutterStandardTypedData(bytes: rawDer),
+      "r": FlutterStandardTypedData(bytes: rScalar),
+      "s": FlutterStandardTypedData(bytes: sScalar),
+      "rawDerSignature": FlutterStandardTypedData(bytes: rawDer)
     ]
   }
 
@@ -230,7 +230,7 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
-      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom
     ]
 
     let status = SecItemDelete(query as CFDictionary)
@@ -239,47 +239,54 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
 
   // MARK: - Helpers
 
-  /// Extracts uncompressed SEC1 public key bytes (0x04 || X || Y) from a SecKey.
   private func extractPublicKeyMap(publicKey: SecKey, keyAlias: String) throws -> [String: Any] {
     var error: Unmanaged<CFError>?
     guard let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
       throw PlatformError(code: "KEY_EXPORT_ERROR", message: "Failed to export public key")
     }
 
-    // SecKeyCopyExternalRepresentation returns the ANSI X9.63 format:
+    // SecKeyCopyExternalRepresentation returns ANSI X9.63:
     // 0x04 || X (32 bytes) || Y (32 bytes) for uncompressed P-256 keys.
     guard publicKeyData.count == 65 && publicKeyData[0] == 0x04 else {
       throw PlatformError(code: "KEY_FORMAT_ERROR", message: "Unexpected public key format (expected 65-byte SEC1)")
     }
 
-    let x = publicKeyData.subdata(in: 1..<33)
-    let y = publicKeyData.subdata(in: 33..<65)
+    let xCoord = publicKeyData.subdata(in: 1..<33)
+    let yCoord = publicKeyData.subdata(in: 33..<65)
 
     return [
       "keyAlias": keyAlias,
-      "x": FlutterStandardTypedData(bytes: x),
-      "y": FlutterStandardTypedData(bytes: y),
+      "x": FlutterStandardTypedData(bytes: xCoord),
+      "y": FlutterStandardTypedData(bytes: yCoord),
       "uncompressedBytes": FlutterStandardTypedData(bytes: publicKeyData),
-      "isolationLevel": "secureEnclave",
+      "isolationLevel": "secureEnclave"
     ]
   }
 
-  /// Parses ASN.1 DER ECDSA signature into 32-byte (r, s) pair.
-  private func parseDerSignature(_ der: Data) throws -> (Data, Data) {
+  private func flutterError(from error: Error) -> FlutterError {
+    if let platformError = error as? PlatformError {
+      return FlutterError(code: platformError.code, message: platformError.message, details: nil)
+    }
+    return FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil)
+  }
+}
+
+// MARK: - DER Parsing
+
+private enum DerParser {
+  static func parseSignature(_ der: Data) throws -> (Data, Data) {
     guard der.count >= 8,
           der[0] == 0x30 else {
       throw PlatformError(code: "DER_PARSE_ERROR", message: "Invalid DER signature format")
     }
 
     var offset = 2
-
-    let r = try readDerInteger(der, offset: &offset)
-    let s = try readDerInteger(der, offset: &offset)
-
-    return (r, s)
+    let rScalar = try readInteger(der, offset: &offset)
+    let sScalar = try readInteger(der, offset: &offset)
+    return (rScalar, sScalar)
   }
 
-  private func readDerInteger(_ der: Data, offset: inout Int) throws -> Data {
+  static func readInteger(_ der: Data, offset: inout Int) throws -> Data {
     guard offset + 2 <= der.count,
           der[offset] == 0x02 else {
       throw PlatformError(code: "DER_PARSE_ERROR", message: "Expected INTEGER tag at offset \(offset)")
@@ -295,7 +302,6 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     let end = offset + length
     offset = end
 
-    // Strip leading zero padding
     while start < end && der[start] == 0x00 {
       start += 1
     }
@@ -304,17 +310,9 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
       throw PlatformError(code: "DER_PARSE_ERROR", message: "INTEGER value too large")
     }
 
-    // Left-pad to exactly 32 bytes
     var result = Data(count: 32)
     result.replaceSubrange((32 - stripped)..<32, with: der[start..<end])
     return result
-  }
-
-  private func flutterError(from error: Error) -> FlutterError {
-    if let pe = error as? PlatformError {
-      return FlutterError(code: pe.code, message: pe.message, details: nil)
-    }
-    return FlutterError(code: "UNKNOWN_ERROR", message: error.localizedDescription, details: nil)
   }
 }
 
