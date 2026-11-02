@@ -1,6 +1,6 @@
 name: chainkey_ios
 description: iOS implementation of the chainkey plugin using Apple Secure Enclave, CryptoKit, and ASAuthorization.
-version: 0.1.1
+version: 0.2.0
 repository: https://github.com/GhagSagar23/chainkey/tree/master/packages/chainkey_ios
 issue_tracker: https://github.com/GhagSagar23/chainkey/issues
 resolution: workspace
@@ -12,7 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  chainkey_platform_interface: ^0.1.0
+  chainkey_platform_interface: ^0.2.0
 
 dev_dependencies:
   flutter_test:

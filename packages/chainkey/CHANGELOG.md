@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Re-export new crypto primitives from `chainkey_platform_interface` 0.2.0.
+
 ## 0.1.1
 
 * Re-export typed exception hierarchy (`ChainkeyException`, `UserCancelledException`, `KeyPermanentlyInvalidatedException`, `BiometricsUnavailableException`, `HardwareEnclaveException`, `PasskeyException`).
