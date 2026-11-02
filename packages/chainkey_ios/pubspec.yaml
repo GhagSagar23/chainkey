@@ -24,4 +24,5 @@ flutter:
     implements: chainkey
     platforms:
       ios:
+        dartPluginClass: ChainkeyIos
         pluginClass: ChainkeyIosPlugin

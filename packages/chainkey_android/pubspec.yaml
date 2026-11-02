@@ -24,5 +24,6 @@ flutter:
     implements: chainkey
     platforms:
       android:
+        dartPluginClass: ChainkeyAndroid
         package: dev.chainkey.chainkey_android
         pluginClass: ChainkeyAndroidPlugin
