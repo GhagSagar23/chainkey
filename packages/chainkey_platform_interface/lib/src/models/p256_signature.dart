@@ -32,6 +32,84 @@ class P256Signature {
     );
   }
 
+  /// Decodes an ASN.1 DER-encoded ECDSA signature into exact 32-byte (r, s).
+  ///
+  /// Handles variable-length integers: strips leading 0x00 padding and
+  /// left-pads short integers to guarantee 32-byte big-endian buffers.
+  factory P256Signature.fromDer(Uint8List der) {
+    if (der.length < 8) {
+      throw FormatException('DER signature too short: ${der.length} bytes');
+    }
+    if (der[0] != 0x30) {
+      throw FormatException(
+        'Expected SEQUENCE tag 0x30, got 0x${der[0].toRadixString(16).padLeft(2, '0')}',
+      );
+    }
+
+    final totalLen = der[1];
+    if (totalLen + 2 != der.length) {
+      throw FormatException(
+        'DER length mismatch: header says ${totalLen + 2}, got ${der.length}',
+      );
+    }
+
+    var offset = 2;
+    final r = _readDerInteger(der, offset);
+    offset = r.nextOffset;
+    final s = _readDerInteger(der, offset);
+
+    if (s.nextOffset != der.length) {
+      throw FormatException(
+        'Trailing bytes after s integer at offset ${s.nextOffset}',
+      );
+    }
+
+    return P256Signature(
+      r: r.bytes,
+      s: s.bytes,
+      rawDerSignature: Uint8List.fromList(der),
+    );
+  }
+
+  static ({Uint8List bytes, int nextOffset}) _readDerInteger(
+    Uint8List der,
+    int offset,
+  ) {
+    if (offset + 2 > der.length) {
+      throw FormatException('Unexpected end of DER at offset $offset');
+    }
+    if (der[offset] != 0x02) {
+      throw FormatException(
+        'Expected INTEGER tag 0x02 at offset $offset, '
+        'got 0x${der[offset].toRadixString(16).padLeft(2, '0')}',
+      );
+    }
+    final len = der[offset + 1];
+    final valueStart = offset + 2;
+    final valueEnd = valueStart + len;
+    if (valueEnd > der.length) {
+      throw FormatException(
+        'INTEGER at offset $offset claims $len bytes but only '
+        '${der.length - valueStart} remain',
+      );
+    }
+
+    // Strip leading zero padding, then left-pad to exactly 32 bytes.
+    var start = valueStart;
+    while (start < valueEnd && der[start] == 0x00) {
+      start++;
+    }
+    final stripped = valueEnd - start;
+    if (stripped > 32) {
+      throw FormatException(
+        'INTEGER value is $stripped bytes after stripping padding; max 32',
+      );
+    }
+    final result = Uint8List(32);
+    result.setRange(32 - stripped, 32, der, start);
+    return (bytes: result, nextOffset: valueEnd);
+  }
+
   /// Reconstructs a P256Signature from a 64-byte compact hex string `(r || s)`.
   /// The hex string may optionally start with '0x'.
   /// Note: `rawDerSignature` is constructed as an empty list since it cannot be fully recovered from a compact hex.
