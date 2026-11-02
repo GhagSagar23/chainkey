@@ -140,6 +140,50 @@ class P256Signature {
     );
   }
 
+  // NIST P-256 curve order n.
+  static final BigInt _n = BigInt.parse(
+    'FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551',
+    radix: 16,
+  );
+
+  // n/2 — threshold for low-S check.
+  static final BigInt _halfN = _n >> 1;
+
+  static BigInt _bytesToBigInt(Uint8List bytes) {
+    var result = BigInt.zero;
+    for (final b in bytes) {
+      result = (result << 8) | BigInt.from(b);
+    }
+    return result;
+  }
+
+  static Uint8List _bigIntToBytes32(BigInt value) {
+    final result = Uint8List(32);
+    var v = value;
+    for (var i = 31; i >= 0; i--) {
+      result[i] = (v & BigInt.from(0xFF)).toInt();
+      v >>= 8;
+    }
+    return result;
+  }
+
+  /// Whether this signature's `s` value is already in low-S form (s <= n/2).
+  bool get isLowS => _bytesToBigInt(s) <= _halfN;
+
+  /// Returns a new signature with `s` normalized to low-S per BIP-62 / EIP-2.
+  ///
+  /// If `s > n/2`, returns a copy with `s' = n - s`. Already-valid signatures
+  /// are returned unchanged (same instance).
+  P256Signature normalizeToLowS() {
+    final sBig = _bytesToBigInt(s);
+    if (sBig <= _halfN) return this;
+    return P256Signature(
+      r: Uint8List.fromList(r),
+      s: _bigIntToBytes32(_n - sBig),
+      rawDerSignature: Uint8List(0),
+    );
+  }
+
   /// Returns the 64-byte compact signature `(r || s)`.
   Uint8List get compactBytes {
     final compact = Uint8List(64);
