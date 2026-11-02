@@ -301,6 +301,108 @@ void main() {
         expect(sig.s, equals(Uint8List(32)..fillRange(0, 32, 0xBE)));
       });
     });
+
+    group('normalizeToLowS', () {
+      Uint8List hexToBytes(String hex) {
+        final bytes = Uint8List(hex.length ~/ 2);
+        for (var i = 0; i < bytes.length; i++) {
+          bytes[i] = int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16);
+        }
+        return bytes;
+      }
+
+      // n   = FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+      // n/2 = 7FFFFFFF800000007FFFFFFFFFFFFFFFDE737D56D38BCF4279DCE5617E3192A8
+      //        (n is odd, so n/2 = floor(n/2); n = 2*(n/2) + 1)
+
+      test('preserves already low-S signature (returns same instance)', () {
+        final r = Uint8List(32)..fillRange(0, 32, 0x01);
+        // s = 1 (well below n/2)
+        final s = Uint8List(32)..[31] = 0x01;
+        final sig = P256Signature(r: r, s: s, rawDerSignature: Uint8List(0));
+
+        final normalized = sig.normalizeToLowS();
+        expect(identical(normalized, sig), isTrue);
+        expect(normalized.isLowS, isTrue);
+      });
+
+      test('preserves s exactly equal to n/2', () {
+        final r = Uint8List(32)..fillRange(0, 32, 0x01);
+        final s = hexToBytes(
+          '7FFFFFFF800000007FFFFFFFFFFFFFFFDE737D56D38BCF4279DCE5617E3192A8',
+        );
+        final sig = P256Signature(r: r, s: s, rawDerSignature: Uint8List(0));
+
+        expect(sig.isLowS, isTrue);
+        final normalized = sig.normalizeToLowS();
+        expect(identical(normalized, sig), isTrue);
+      });
+
+      test('normalizes s = n/2 + 1 (just above threshold)', () {
+        final r = Uint8List(32)..fillRange(0, 32, 0x01);
+        // s = n/2 + 1
+        final s = hexToBytes(
+          '7FFFFFFF800000007FFFFFFFFFFFFFFFDE737D56D38BCF4279DCE5617E3192A9',
+        );
+        final sig = P256Signature(r: r, s: s, rawDerSignature: Uint8List(0));
+
+        expect(sig.isLowS, isFalse);
+        final normalized = sig.normalizeToLowS();
+        expect(normalized.isLowS, isTrue);
+        // s' = n - (n/2 + 1) = n/2  (since n = 2*(n/2) + 1)
+        expect(
+          normalized.s,
+          equals(hexToBytes(
+            '7FFFFFFF800000007FFFFFFFFFFFFFFFDE737D56D38BCF4279DCE5617E3192A8',
+          )),
+        );
+      });
+
+      test('normalizes high-S = n - 1 to s = 1', () {
+        final r = Uint8List(32)..fillRange(0, 32, 0xAA);
+        // s = n - 1
+        final s = hexToBytes(
+          'FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632550',
+        );
+        final sig = P256Signature(r: r, s: s, rawDerSignature: Uint8List(0));
+
+        expect(sig.isLowS, isFalse);
+        final normalized = sig.normalizeToLowS();
+        expect(normalized.isLowS, isTrue);
+        // n - (n-1) = 1
+        final expectedS = Uint8List(32)..[31] = 0x01;
+        expect(normalized.s, equals(expectedS));
+      });
+
+      test('normalized signature clears rawDerSignature', () {
+        final r = Uint8List(32)..fillRange(0, 32, 0x01);
+        final s = hexToBytes(
+          'FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632550',
+        );
+        final sig = P256Signature(
+          r: r,
+          s: s,
+          rawDerSignature: Uint8List.fromList([0x30, 0x06]),
+        );
+
+        final normalized = sig.normalizeToLowS();
+        expect(normalized.rawDerSignature.length, 0);
+      });
+
+      test('r is preserved unchanged through normalization', () {
+        final r = Uint8List(32);
+        for (var i = 0; i < 32; i++) {
+          r[i] = i;
+        }
+        final s = hexToBytes(
+          'FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632550',
+        );
+        final sig = P256Signature(r: r, s: s, rawDerSignature: Uint8List(0));
+
+        final normalized = sig.normalizeToLowS();
+        expect(normalized.r, equals(r));
+      });
+    });
   });
 
   group('PasskeyCredential', () {
