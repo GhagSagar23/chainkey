@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Bump `chainkey_platform_interface` dependency to ^0.2.0.
+
 ## 0.1.1
 
 * Map platform exceptions to typed `ChainkeyException` instances.
