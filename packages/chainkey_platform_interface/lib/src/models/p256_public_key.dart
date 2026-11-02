@@ -56,6 +56,124 @@ class P256PublicKey {
     );
   }
 
+  // NIST P-256 curve parameters for on-curve validation.
+  static final BigInt _p = BigInt.parse(
+    'FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF',
+    radix: 16,
+  );
+  static final BigInt _b = BigInt.parse(
+    '5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B',
+    radix: 16,
+  );
+  static final BigInt _a = _p - BigInt.from(3); // a = -3 mod p
+
+  static BigInt _bytesToBigInt(Uint8List bytes) {
+    var result = BigInt.zero;
+    for (final b in bytes) {
+      result = (result << 8) | BigInt.from(b);
+    }
+    return result;
+  }
+
+  /// Whether this point lies on the NIST P-256 curve: y² ≡ x³ + ax + b (mod p).
+  bool get isOnCurve {
+    final xBig = _bytesToBigInt(x);
+    final yBig = _bytesToBigInt(y);
+    final lhs = (yBig * yBig) % _p;
+    final rhs = (xBig.modPow(BigInt.from(3), _p) + _a * xBig + _b) % _p;
+    return lhs == rhs;
+  }
+
+  /// Constructs a P256PublicKey from raw 32-byte x and y coordinates.
+  factory P256PublicKey.fromCoordinates({
+    required Uint8List x,
+    required Uint8List y,
+    String keyAlias = '',
+    HardwareIsolationLevel isolationLevel = HardwareIsolationLevel.software,
+  }) {
+    final uncompressed = Uint8List(65);
+    uncompressed[0] = 0x04;
+    uncompressed.setRange(1, 33, x);
+    uncompressed.setRange(33, 65, y);
+    return P256PublicKey(
+      keyAlias: keyAlias,
+      x: Uint8List.fromList(x),
+      y: Uint8List.fromList(y),
+      uncompressedBytes: uncompressed,
+      isolationLevel: isolationLevel,
+    );
+  }
+
+  /// Extracts the public key from an X.509 SubjectPublicKeyInfo (SPKI) DER structure.
+  ///
+  /// SPKI layout: SEQUENCE { SEQUENCE { OID(ecPublicKey) OID(prime256v1) } BIT STRING { 0x04||X||Y } }
+  /// The ecPublicKey OID is 1.2.840.10045.2.1 and prime256v1 is 1.2.840.10045.3.1.7.
+  factory P256PublicKey.fromSpki(
+    Uint8List spki, {
+    String keyAlias = '',
+    HardwareIsolationLevel isolationLevel = HardwareIsolationLevel.software,
+  }) {
+    // Strategy: scan for the 65-byte uncompressed point (0x04 prefix) inside
+    // the BIT STRING. We validate the SPKI OIDs for safety.
+
+    // ecPublicKey OID: 06 07 2A 86 48 CE 3D 02 01
+    const ecPubKeyOid = [0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01];
+    // prime256v1 OID: 06 08 2A 86 48 CE 3D 03 01 07
+    const p256Oid = [
+      0x06,
+      0x08,
+      0x2A,
+      0x86,
+      0x48,
+      0xCE,
+      0x3D,
+      0x03,
+      0x01,
+      0x07
+    ];
+
+    if (!_containsSequence(spki, ecPubKeyOid)) {
+      throw FormatException('SPKI missing ecPublicKey OID (1.2.840.10045.2.1)');
+    }
+    if (!_containsSequence(spki, p256Oid)) {
+      throw FormatException(
+          'SPKI missing prime256v1 OID (1.2.840.10045.3.1.7)');
+    }
+
+    // Find BIT STRING tag (0x03) followed by length and 0x00 padding byte,
+    // then 0x04 (uncompressed point marker).
+    for (var i = 0; i < spki.length - 67; i++) {
+      if (spki[i] == 0x03) {
+        final len = spki[i + 1];
+        // BIT STRING content: 1 byte padding (0x00) + 65 bytes point = 66
+        if (len == 66 && spki[i + 2] == 0x00 && spki[i + 3] == 0x04) {
+          final pointStart = i + 3;
+          return P256PublicKey.fromCoordinates(
+            x: Uint8List.fromList(
+                spki.sublist(pointStart + 1, pointStart + 33)),
+            y: Uint8List.fromList(
+                spki.sublist(pointStart + 33, pointStart + 65)),
+            keyAlias: keyAlias,
+            isolationLevel: isolationLevel,
+          );
+        }
+      }
+    }
+    throw FormatException(
+        'No uncompressed P-256 point found in SPKI structure');
+  }
+
+  static bool _containsSequence(Uint8List haystack, List<int> needle) {
+    outer:
+    for (var i = 0; i <= haystack.length - needle.length; i++) {
+      for (var j = 0; j < needle.length; j++) {
+        if (haystack[i + j] != needle[j]) continue outer;
+      }
+      return true;
+    }
+    return false;
+  }
+
   /// Reconstructs a P256PublicKey from a hex string representing the 65-byte uncompressed public key.
   /// The hex string may optionally start with '0x'.
   factory P256PublicKey.fromHex(

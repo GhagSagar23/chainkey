@@ -113,6 +113,122 @@ void main() {
       expect(key1, equals(key2));
       expect(key1.hashCode, equals(key2.hashCode));
     });
+
+    group('fromCoordinates', () {
+      test('builds 0x04 || X || Y from raw coordinates', () {
+        final x = Uint8List(32)..fillRange(0, 32, 0xAA);
+        final y = Uint8List(32)..fillRange(0, 32, 0xBB);
+        final key = P256PublicKey.fromCoordinates(x: x, y: y);
+
+        expect(key.uncompressedBytes[0], 0x04);
+        expect(key.uncompressedBytes.length, 65);
+        expect(key.x, equals(x));
+        expect(key.y, equals(y));
+        expect(key.keyAlias, '');
+        expect(key.isolationLevel, HardwareIsolationLevel.software);
+      });
+
+      test('passes through keyAlias and isolationLevel', () {
+        final key = P256PublicKey.fromCoordinates(
+          x: Uint8List(32),
+          y: Uint8List(32),
+          keyAlias: 'test',
+          isolationLevel: HardwareIsolationLevel.secureEnclave,
+        );
+        expect(key.keyAlias, 'test');
+        expect(key.isolationLevel, HardwareIsolationLevel.secureEnclave);
+      });
+    });
+
+    group('isOnCurve', () {
+      test('returns true for NIST P-256 generator point G', () {
+        // G = (Gx, Gy) is the standard base point
+        final key = P256PublicKey.fromHex(
+          '046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+        );
+        expect(key.isOnCurve, isTrue);
+      });
+
+      test('returns false for a fabricated off-curve point', () {
+        // Flip one byte of Gy — almost certainly off-curve
+        final key = P256PublicKey.fromHex(
+          '046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f4',
+        );
+        expect(key.isOnCurve, isFalse);
+      });
+
+      test('returns false for zero point (0, 0)', () {
+        final key = P256PublicKey.fromCoordinates(
+          x: Uint8List(32),
+          y: Uint8List(32),
+        );
+        expect(key.isOnCurve, isFalse);
+      });
+    });
+
+    group('fromSpki', () {
+      Uint8List hexToBytes(String hex) {
+        final bytes = Uint8List(hex.length ~/ 2);
+        for (var i = 0; i < bytes.length; i++) {
+          bytes[i] = int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16);
+        }
+        return bytes;
+      }
+
+      test('extracts generator point G from valid SPKI DER', () {
+        final spki = hexToBytes(
+          '3059301306072a8648ce3d020106082a8648ce3d030107'
+          '034200046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+        );
+        final key = P256PublicKey.fromSpki(spki, keyAlias: 'spki-test');
+
+        expect(key.isOnCurve, isTrue);
+        expect(key.keyAlias, 'spki-test');
+        expect(key.uncompressedBytes[0], 0x04);
+
+        final gKey = P256PublicKey.fromHex(
+          '046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+        );
+        expect(key.x, equals(gKey.x));
+        expect(key.y, equals(gKey.y));
+      });
+
+      test('throws on missing ecPublicKey OID', () {
+        // Valid structure but replace ecPublicKey OID with garbage
+        final spki = hexToBytes(
+          '3059301306070000000000000106082a8648ce3d030107'
+          '034200046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+        );
+        expect(
+          () => P256PublicKey.fromSpki(spki),
+          throwsA(isA<FormatException>()),
+        );
+      });
+
+      test('throws on missing prime256v1 OID', () {
+        final spki = hexToBytes(
+          '3059301306072a8648ce3d020106080000000000000000'
+          '034200046b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+          '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+        );
+        expect(
+          () => P256PublicKey.fromSpki(spki),
+          throwsA(isA<FormatException>()),
+        );
+      });
+
+      test('throws on empty input', () {
+        expect(
+          () => P256PublicKey.fromSpki(Uint8List(0)),
+          throwsA(isA<FormatException>()),
+        );
+      });
+    });
   });
 
   group('P256Signature', () {
