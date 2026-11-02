@@ -249,8 +249,8 @@ void main() {
 
       test('throws on wrong SEQUENCE tag', () {
         expect(
-          () => P256Signature.fromDer(
-              Uint8List.fromList([0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02])),
+          () => P256Signature.fromDer(Uint8List.fromList(
+              [0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02])),
           throwsA(isA<FormatException>()),
         );
       });
