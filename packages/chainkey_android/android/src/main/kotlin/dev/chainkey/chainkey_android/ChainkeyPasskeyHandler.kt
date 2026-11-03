@@ -9,7 +9,6 @@ import androidx.credentials.PublicKeyCredential
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.NoCredentialException
-import androidx.fragment.app.FragmentActivity
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.coroutines.CoroutineScope
@@ -28,8 +27,11 @@ internal fun ChainkeyAndroidPlugin.handleRegisterPasskey(
     val userId = call.argument<ByteArray>("userId")
     val challenge = call.argument<ByteArray>("challenge")
 
-    if (rpId == null || userName == null || userDisplayName == null ||
-        userId == null || challenge == null
+    if (rpId == null ||
+        userName == null ||
+        userDisplayName == null ||
+        userId == null ||
+        challenge == null
     ) {
         result.error(
             "INVALID_ARGUMENT",
@@ -46,19 +48,26 @@ internal fun ChainkeyAndroidPlugin.handleRegisterPasskey(
         return
     }
 
-    val requestJson = buildRegistrationJson(
-        rpId, userName, userDisplayName, userId, challenge, requireUv,
-    )
+    val requestJson =
+        buildRegistrationJson(
+            rpId,
+            userName,
+            userDisplayName,
+            userId,
+            challenge,
+            requireUv,
+        )
 
     val credentialManager = CredentialManager.create(fragmentActivity)
     val request = CreatePublicKeyCredentialRequest(requestJson)
 
     CoroutineScope(Dispatchers.Main).launch {
         try {
-            val response = credentialManager.createCredential(
-                fragmentActivity,
-                request,
-            )
+            val response =
+                credentialManager.createCredential(
+                    fragmentActivity,
+                    request,
+                )
             val pkCred = response as? PublicKeyCredential
             if (pkCred == null) {
                 result.error(
@@ -109,10 +118,11 @@ internal fun ChainkeyAndroidPlugin.handleAssertPasskey(
 
     CoroutineScope(Dispatchers.Main).launch {
         try {
-            val response = credentialManager.getCredential(
-                fragmentActivity,
-                request,
-            )
+            val response =
+                credentialManager.getCredential(
+                    fragmentActivity,
+                    request,
+                )
             val pkCred = response.credential as? PublicKeyCredential
             if (pkCred == null) {
                 result.error(
@@ -148,33 +158,32 @@ private fun buildRegistrationJson(
     challenge: ByteArray,
     requireUv: Boolean,
 ): String {
-    val json = JSONObject().apply {
-        put("rp", JSONObject().apply {
-            put("id", rpId)
-            put("name", rpId)
-        })
-        put("user", JSONObject().apply {
-            put("id", base64UrlEncode(userId))
-            put("name", userName)
-            put("displayName", userDisplayName)
-        })
-        put("challenge", base64UrlEncode(challenge))
-        put("pubKeyCredParams", JSONArray().apply {
-            put(JSONObject().apply {
-                put("type", "public-key")
-                put("alg", -7) // ES256
-            })
-        })
-        put("authenticatorSelection", JSONObject().apply {
-            put("authenticatorAttachment", "platform")
-            put("residentKey", "required")
-            put(
-                "userVerification",
-                if (requireUv) "required" else "preferred",
-            )
-        })
-        put("attestation", "none")
-    }
+    val rpObj = JSONObject()
+    rpObj.put("id", rpId)
+    rpObj.put("name", rpId)
+
+    val userObj = JSONObject()
+    userObj.put("id", base64UrlEncode(userId))
+    userObj.put("name", userName)
+    userObj.put("displayName", userDisplayName)
+
+    val es256 = JSONObject()
+    es256.put("type", "public-key")
+    es256.put("alg", -7)
+
+    val uvStr = if (requireUv) "required" else "preferred"
+    val authSelection = JSONObject()
+    authSelection.put("authenticatorAttachment", "platform")
+    authSelection.put("residentKey", "required")
+    authSelection.put("userVerification", uvStr)
+
+    val json = JSONObject()
+    json.put("rp", rpObj)
+    json.put("user", userObj)
+    json.put("challenge", base64UrlEncode(challenge))
+    json.put("pubKeyCredParams", JSONArray().put(es256))
+    json.put("authenticatorSelection", authSelection)
+    json.put("attestation", "none")
     return json.toString()
 }
 
@@ -184,53 +193,45 @@ private fun buildAssertionJson(
     requireUv: Boolean,
     allowedIds: List<String>?,
 ): String {
-    val json = JSONObject().apply {
-        put("challenge", base64UrlEncode(challenge))
-        put("rpId", rpId)
-        put(
-            "userVerification",
-            if (requireUv) "required" else "preferred",
-        )
-        if (!allowedIds.isNullOrEmpty()) {
-            put("allowCredentials", JSONArray().apply {
-                for (credId in allowedIds) {
-                    put(JSONObject().apply {
-                        put("type", "public-key")
-                        put("id", credId)
-                    })
-                }
-            })
+    val uvStr = if (requireUv) "required" else "preferred"
+    val json = JSONObject()
+    json.put("challenge", base64UrlEncode(challenge))
+    json.put("rpId", rpId)
+    json.put("userVerification", uvStr)
+
+    if (!allowedIds.isNullOrEmpty()) {
+        val arr = JSONArray()
+        for (credId in allowedIds) {
+            val entry = JSONObject()
+            entry.put("type", "public-key")
+            entry.put("id", credId)
+            arr.put(entry)
         }
+        json.put("allowCredentials", arr)
     }
     return json.toString()
 }
 
-private fun parseRegistrationResponse(
-    credential: PublicKeyCredential,
-): Map<String, Any> {
+private fun parseRegistrationResponse(credential: PublicKeyCredential): Map<String, Any> {
     val json = JSONObject(credential.authenticationResponseJson)
     val responseObj = json.getJSONObject("response")
 
     val credentialId = json.getString("id")
-    val attestationB64 = responseObj.getString("attestationObject")
-    val clientDataB64 = responseObj.getString("clientDataJSON")
-
-    val attestationBytes = base64UrlDecode(attestationB64)
-    val clientDataBytes = base64UrlDecode(clientDataB64)
+    val attestationBytes = base64UrlDecode(responseObj.getString("attestationObject"))
+    val clientDataBytes = base64UrlDecode(responseObj.getString("clientDataJSON"))
 
     // ponytail: stub public key — real key is in the CBOR attestation,
     // extracted server-side.
-    val stubX = ByteArray(32)
-    val stubY = ByteArray(32)
     val stubUncompressed = ByteArray(65).apply { this[0] = 0x04 }
 
-    val publicKeyMap = mapOf(
-        "keyAlias" to credentialId,
-        "x" to stubX,
-        "y" to stubY,
-        "uncompressedBytes" to stubUncompressed,
-        "isolationLevel" to "software",
-    )
+    val publicKeyMap =
+        mapOf(
+            "keyAlias" to credentialId,
+            "x" to ByteArray(32),
+            "y" to ByteArray(32),
+            "uncompressedBytes" to stubUncompressed,
+            "isolationLevel" to "software",
+        )
 
     return mapOf(
         "credentialId" to credentialId,
@@ -241,39 +242,34 @@ private fun parseRegistrationResponse(
     )
 }
 
-private fun parseAssertionResponse(
-    credential: PublicKeyCredential,
-): Map<String, Any> {
+private fun parseAssertionResponse(credential: PublicKeyCredential): Map<String, Any> {
     val json = JSONObject(credential.authenticationResponseJson)
     val responseObj = json.getJSONObject("response")
 
     val credentialId = json.getString("id")
-    val authDataB64 = responseObj.getString("authenticatorData")
-    val clientDataB64 = responseObj.getString("clientDataJSON")
-    val signatureB64 = responseObj.getString("signature")
-
-    val authDataBytes = base64UrlDecode(authDataB64)
-    val clientDataBytes = base64UrlDecode(clientDataB64)
-    val signatureBytes = base64UrlDecode(signatureB64)
+    val authDataBytes = base64UrlDecode(responseObj.getString("authenticatorData"))
+    val clientDataBytes = base64UrlDecode(responseObj.getString("clientDataJSON"))
+    val signatureBytes = base64UrlDecode(responseObj.getString("signature"))
 
     val (rBytes, sBytes) = parseDerSignature(signatureBytes)
 
-    val signatureMap = mapOf(
-        "r" to rBytes,
-        "s" to sBytes,
-        "rawDerSignature" to signatureBytes,
-    )
+    val signatureMap =
+        mapOf(
+            "r" to rBytes,
+            "s" to sBytes,
+            "rawDerSignature" to signatureBytes,
+        )
 
-    val responseMap = mutableMapOf<String, Any>(
-        "credentialId" to credentialId,
-        "authenticatorData" to authDataBytes,
-        "clientDataJson" to clientDataBytes,
-        "signature" to signatureMap,
-    )
+    val responseMap =
+        mutableMapOf<String, Any>(
+            "credentialId" to credentialId,
+            "authenticatorData" to authDataBytes,
+            "clientDataJson" to clientDataBytes,
+            "signature" to signatureMap,
+        )
 
     if (responseObj.has("userHandle")) {
-        val userHandleB64 = responseObj.getString("userHandle")
-        responseMap["userHandle"] = base64UrlDecode(userHandleB64)
+        responseMap["userHandle"] = base64UrlDecode(responseObj.getString("userHandle"))
     }
 
     return responseMap
@@ -290,7 +286,10 @@ private fun parseDerSignature(der: ByteArray): Pair<ByteArray, ByteArray> {
     return Pair(rResult.first, sResult.first)
 }
 
-private fun readDerInteger(der: ByteArray, offset: Int): Pair<ByteArray, Int> {
+private fun readDerInteger(
+    der: ByteArray,
+    offset: Int,
+): Pair<ByteArray, Int> {
     require(offset + 2 <= der.size && der[offset] == 0x02.toByte()) {
         "Expected INTEGER tag at offset $offset"
     }
@@ -300,7 +299,9 @@ private fun readDerInteger(der: ByteArray, offset: Int): Pair<ByteArray, Int> {
     require(valueEnd <= der.size) { "INTEGER overflows buffer" }
 
     var start = valueStart
-    while (start < valueEnd && der[start] == 0x00.toByte()) { start++ }
+    while (start < valueEnd && der[start] == 0x00.toByte()) {
+        start++
+    }
     val stripped = valueEnd - start
     require(stripped <= 32) { "INTEGER value too large" }
 
