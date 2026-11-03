@@ -1,10 +1,16 @@
 package dev.chainkey.chainkey_android
 
+import android.app.Activity
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -16,8 +22,9 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 
 /** ChainkeyAndroidPlugin */
-class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
+class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
+    private var activity: FragmentActivity? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "dev.chainkey/chainkey_android")
@@ -37,6 +44,26 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
+
+    // region ActivityAware
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity as? FragmentActivity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity as? FragmentActivity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
+    }
+
+    // endregion
 
     // region isHardwareIsolationSupported
 
@@ -73,7 +100,6 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
         keyAlias: String,
         requireUserPresence: Boolean,
     ): Map<String, Any> {
-        // Delete existing key if present
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
         if (keyStore.containsAlias(keyAlias)) {
@@ -94,14 +120,12 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
                     }
                 }
 
-        // StrongBox requires API 28+; fall back to TEE silently
         var isolationLevel = "tee"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 specBuilder.setIsStrongBoxBacked(true)
                 isolationLevel = "strongBox"
             } catch (_: Exception) {
-                // StrongBox not available on this device, continue with TEE
                 isolationLevel = "tee"
             }
         }
@@ -115,7 +139,6 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
         try {
             keyPairGenerator.initialize(specBuilder.build())
         } catch (e: Exception) {
-            // StrongBox init failed; retry without it
             if (isolationLevel == "strongBox" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 specBuilder.setIsStrongBoxBacked(false)
                 isolationLevel = "tee"
@@ -135,6 +158,7 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
 
     // region signWithHardwareKey
 
+    @Suppress("UNCHECKED_CAST")
     private fun handleSignWithHardwareKey(call: MethodCall, result: Result) {
         val keyAlias = call.argument<String>("keyAlias")
         val hash32 = call.argument<ByteArray>("hash32")
@@ -148,9 +172,19 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
             return
         }
 
+        val promptOptions = call.argument<Map<String, Any>>("promptOptions")
+
         try {
-            val signatureMap = signWithKeyStore(keyAlias, hash32)
-            result.success(signatureMap)
+            val signature = prepareSignature(keyAlias)
+
+            if (promptOptions != null && activity != null) {
+                signWithBiometricPrompt(signature, hash32, promptOptions, result)
+            } else {
+                // No prompt customization or no activity — use direct signing
+                // (triggers system biometric prompt for auth-protected keys)
+                val signedResult = executeSign(signature, hash32)
+                result.success(signedResult)
+            }
         } catch (e: KeyPermanentlyInvalidatedException) {
             result.error(
                 "KEY_PERMANENTLY_INVALIDATED",
@@ -162,7 +196,7 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun signWithKeyStore(keyAlias: String, hash32: ByteArray): Map<String, Any> {
+    private fun prepareSignature(keyAlias: String): Signature {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
 
@@ -170,14 +204,90 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
             keyStore.getKey(keyAlias, null)
                 ?: throw IllegalStateException("No key found for alias: $keyAlias")
 
-        // NONEwithECDSA signs raw bytes without hashing
         val signature = Signature.getInstance("NONEwithECDSA")
         signature.initSign(privateKey as java.security.PrivateKey)
+        return signature
+    }
+
+    private fun signWithBiometricPrompt(
+        signature: Signature,
+        hash32: ByteArray,
+        promptOptions: Map<String, Any>,
+        result: Result,
+    ) {
+        val fragmentActivity =
+            activity ?: run {
+                result.error("NO_ACTIVITY", "No activity available for biometric prompt", null)
+                return
+            }
+
+        val title = promptOptions["title"] as? String ?: "Biometric Authentication"
+        val subtitle = promptOptions["subtitle"] as? String
+        val description = promptOptions["description"] as? String
+        val negativeText = promptOptions["negativeButtonText"] as? String ?: "Cancel"
+
+        val promptInfoBuilder =
+            BiometricPrompt.PromptInfo
+                .Builder()
+                .setTitle(title)
+                .setNegativeButtonText(negativeText)
+
+        if (subtitle != null) promptInfoBuilder.setSubtitle(subtitle)
+        if (description != null) promptInfoBuilder.setDescription(description)
+
+        val confirmationRequired = promptOptions["confirmationRequired"] as? Boolean ?: true
+        promptInfoBuilder.setConfirmationRequired(confirmationRequired)
+
+        val executor = ContextCompat.getMainExecutor(fragmentActivity)
+        val cryptoObject = BiometricPrompt.CryptoObject(signature)
+
+        val biometricPrompt =
+            BiometricPrompt(
+                fragmentActivity,
+                executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationSucceeded(authResult: BiometricPrompt.AuthenticationResult) {
+                        try {
+                            val authedSig =
+                                authResult.cryptoObject?.signature
+                                    ?: throw IllegalStateException("CryptoObject lost after auth")
+                            val signedResult = executeSign(authedSig, hash32)
+                            result.success(signedResult)
+                        } catch (e: Exception) {
+                            result.error("SIGNING_ERROR", e.message, null)
+                        }
+                    }
+
+                    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                        val code =
+                            when (errorCode) {
+                                BiometricPrompt.ERROR_USER_CANCELED,
+                                BiometricPrompt.ERROR_NEGATIVE_BUTTON,
+                                -> "USER_CANCELLED"
+
+                                BiometricPrompt.ERROR_LOCKOUT,
+                                BiometricPrompt.ERROR_LOCKOUT_PERMANENT,
+                                -> "BIOMETRICS_UNAVAILABLE"
+
+                                else -> "BIOMETRIC_ERROR"
+                            }
+                        result.error(code, errString.toString(), null)
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        // Called on each failed attempt; prompt stays open.
+                        // No action needed — Android retries automatically.
+                    }
+                },
+            )
+
+        biometricPrompt.authenticate(promptInfoBuilder.build(), cryptoObject)
+    }
+
+    private fun executeSign(signature: Signature, hash32: ByteArray): Map<String, Any> {
         signature.update(hash32)
         val derBytes = signature.sign()
-
         val (rBytes, sBytes) = parseDerSignature(derBytes)
-
         return mapOf(
             "r" to rBytes,
             "s" to sBytes,
@@ -255,7 +365,6 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
         val valueEnd = valueStart + length
         require(valueEnd <= der.size) { "INTEGER overflows buffer" }
 
-        // Strip leading zero padding
         var start = valueStart
         while (start < valueEnd && der[start] == 0x00.toByte()) {
             start++
@@ -263,7 +372,6 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler {
         val stripped = valueEnd - start
         require(stripped <= 32) { "INTEGER value too large" }
 
-        // Left-pad to exactly 32 bytes
         val result = ByteArray(32)
         System.arraycopy(der, start, result, 32 - stripped, stripped)
         return Pair(result, valueEnd)
