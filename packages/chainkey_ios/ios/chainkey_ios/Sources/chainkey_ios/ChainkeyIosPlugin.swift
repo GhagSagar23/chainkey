@@ -140,9 +140,15 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
       return
     }
 
+    let promptOptions = args["promptOptions"] as? [String: Any]
+
     DispatchQueue.global(qos: .userInitiated).async {
       do {
-        let signatureMap = try self.signWithSecureEnclave(keyAlias: keyAlias, hash32: hashData)
+        let signatureMap = try self.signWithSecureEnclave(
+          keyAlias: keyAlias,
+          hash32: hashData,
+          promptOptions: promptOptions
+        )
         DispatchQueue.main.async {
           result(signatureMap)
         }
@@ -154,14 +160,28 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  // swiftlint:disable:next function_body_length
-  private func signWithSecureEnclave(keyAlias: String, hash32: Data) throws -> [String: Any] {
-    let query: [String: Any] = [
+  private func signWithSecureEnclave(
+    keyAlias: String,
+    hash32: Data,
+    promptOptions: [String: Any]?
+  ) throws -> [String: Any] {
+    var query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecReturnRef as String: true
     ]
+
+    // Set LAContext with localizedReason for custom biometric prompt text
+    if let options = promptOptions {
+      let context = LAContext()
+      let reason = options["title"] as? String ?? "Biometric Authentication"
+      context.localizedReason = reason
+      if let cancelTitle = options["negativeButtonText"] as? String {
+        context.localizedCancelTitle = cancelTitle
+      }
+      query[kSecUseAuthenticationContext as String] = context
+    }
 
     var item: CFTypeRef?
     let status = SecItemCopyMatching(query as CFDictionary, &item)
@@ -190,22 +210,7 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
       hash32 as CFData,
       &error
     ) else {
-      let cfError = error?.takeRetainedValue()
-      let message = cfError?.localizedDescription ?? "Signing failed"
-      if let cfError = cfError {
-        let nsError = cfError as Error as NSError
-        if nsError.domain == LAErrorDomain {
-          switch nsError.code {
-          case LAError.userCancel.rawValue:
-            throw PlatformError(code: "USER_CANCELLED", message: "User cancelled biometric authentication")
-          case LAError.biometryLockout.rawValue:
-            throw PlatformError(code: "BIOMETRICS_UNAVAILABLE", message: "Biometrics locked out")
-          default:
-            break
-          }
-        }
-      }
-      throw PlatformError(code: "SIGNING_ERROR", message: message)
+      throw Self.mapSigningError(error?.takeRetainedValue())
     }
 
     let rawDer = derSignature as Data
@@ -261,6 +266,24 @@ public class ChainkeyIosPlugin: NSObject, FlutterPlugin {
       "uncompressedBytes": FlutterStandardTypedData(bytes: publicKeyData),
       "isolationLevel": "secureEnclave"
     ]
+  }
+
+  private static func mapSigningError(_ cfError: CFError?) -> PlatformError {
+    let message = cfError.map { $0 as Error }.map { $0.localizedDescription } ?? "Signing failed"
+    if let cfError = cfError {
+      let nsError = cfError as Error as NSError
+      if nsError.domain == LAErrorDomain {
+        switch nsError.code {
+        case LAError.userCancel.rawValue:
+          return PlatformError(code: "USER_CANCELLED", message: "User cancelled biometric authentication")
+        case LAError.biometryLockout.rawValue:
+          return PlatformError(code: "BIOMETRICS_UNAVAILABLE", message: "Biometrics locked out")
+        default:
+          break
+        }
+      }
+    }
+    return PlatformError(code: "SIGNING_ERROR", message: message)
   }
 
   private func flutterError(from error: Error) -> FlutterError {
