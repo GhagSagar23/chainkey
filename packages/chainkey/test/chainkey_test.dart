@@ -44,6 +44,50 @@ class MockChainkeyPlatform
     HardwareIsolationLevel level,
   ) async =>
       level == HardwareIsolationLevel.secureEnclave;
+
+  @override
+  Future<PasskeyCredential> registerPasskey({
+    required String relyingPartyId,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List userId,
+    required Uint8List challenge,
+    bool requireUserVerification = true,
+  }) async {
+    final bytes = Uint8List(65);
+    bytes[0] = 0x04;
+    return PasskeyCredential(
+      credentialId: 'mock-cred',
+      publicKey: P256PublicKey(
+        keyAlias: 'mock-cred',
+        x: Uint8List(32),
+        y: Uint8List(32),
+        uncompressedBytes: bytes,
+        isolationLevel: HardwareIsolationLevel.secureEnclave,
+      ),
+      rawAttestationObject: Uint8List(0),
+      rawClientDataJson: Uint8List(0),
+    );
+  }
+
+  @override
+  Future<PasskeyAssertionResult> assertPasskey({
+    required String relyingPartyId,
+    required Uint8List challenge,
+    List<String>? allowedCredentialIds,
+    bool requireUserVerification = true,
+  }) async {
+    return PasskeyAssertionResult(
+      credentialId: 'mock-cred',
+      authenticatorData: Uint8List(37),
+      clientDataJson: Uint8List(0),
+      signature: P256Signature(
+        r: Uint8List(32),
+        s: Uint8List(32),
+        rawDerSignature: Uint8List(0),
+      ),
+    );
+  }
 }
 
 void main() {
@@ -168,5 +212,27 @@ class ThrowingChainkeyPlatform
   Future<bool> isHardwareIsolationSupported(
       HardwareIsolationLevel level) async {
     throw const BiometricsUnavailableException();
+  }
+
+  @override
+  Future<PasskeyCredential> registerPasskey({
+    required String relyingPartyId,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List userId,
+    required Uint8List challenge,
+    bool requireUserVerification = true,
+  }) async {
+    throw const PasskeyException('Registration failed');
+  }
+
+  @override
+  Future<PasskeyAssertionResult> assertPasskey({
+    required String relyingPartyId,
+    required Uint8List challenge,
+    List<String>? allowedCredentialIds,
+    bool requireUserVerification = true,
+  }) async {
+    throw const PasskeyException('Assertion failed');
   }
 }

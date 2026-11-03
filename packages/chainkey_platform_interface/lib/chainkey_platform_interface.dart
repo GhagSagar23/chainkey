@@ -1,9 +1,13 @@
 export 'src/chainkey_platform_interface.dart';
 export 'src/exceptions/chainkey_exceptions.dart';
 export 'src/method_channel_chainkey.dart';
+export 'src/models/authenticator_data.dart';
 export 'src/models/biometric_prompt_options.dart';
+export 'src/models/client_data_json.dart';
+export 'src/models/domain_verification.dart';
 export 'src/models/hardware_isolation_level.dart';
 export 'src/models/p256_public_key.dart';
 export 'src/models/p256_signature.dart';
+export 'src/models/passkey_assertion_result.dart';
 export 'src/models/passkey_credential.dart';
 export 'src/pigeon/chainkey_api.g.dart';

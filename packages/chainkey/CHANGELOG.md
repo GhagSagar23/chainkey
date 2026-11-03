@@ -1,3 +1,11 @@
+## 0.4.0
+
+* Cross-platform WebAuthn passkey registration and assertion (iOS, Android, Web).
+* Export `AuthenticatorData`, `ClientDataJson`, `PasskeyAssertionResult`, `PasskeyCredential` from platform interface.
+* Export domain verification utilities (`verifyAppleAppSiteAssociation`, `verifyAssetLinks`).
+* Add CLI tool: `dart run chainkey:verify_domain` for RP domain association validation.
+* Bump all platform dependencies to ^0.4.0.
+
 ## 0.3.0
 
 * Native hardware key generation and signing now functional on iOS (Secure Enclave) and Android (KeyStore/StrongBox).

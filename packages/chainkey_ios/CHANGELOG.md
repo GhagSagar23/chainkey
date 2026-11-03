@@ -1,3 +1,12 @@
+## 0.4.0
+
+* Implement passkey registration via `ASAuthorizationPlatformPublicKeyCredentialProvider`.
+* Implement passkey assertion via `ASAuthorizationController` delegate pattern.
+* Add `ASAuthorizationControllerPresentationContextProviding` for window anchor.
+* Map `ASAuthorizationError` codes to `UserCancelledException`/`PasskeyException`.
+* Split plugin into `ChainkeyEnclaveHandler` and `ChainkeyPasskeyHandler` for SwiftLint compliance.
+* Bump `chainkey_platform_interface` dependency to ^0.4.0.
+
 ## 0.3.0
 
 * Implement iOS Secure Enclave native P-256 keypair generation via `SecKeyCreateRandomKey` with `kSecAttrTokenIDSecureEnclave`.

@@ -27,6 +27,23 @@ class PasskeyCredential {
   /// The hardware backing security tier.
   final HardwareIsolationLevel isolationLevel;
 
+  factory PasskeyCredential.fromMap(Map<String, dynamic> map) {
+    final rawPk = map['publicKey'];
+    final pkMap = rawPk is Map<String, dynamic>
+        ? rawPk
+        : Map<String, dynamic>.from(rawPk as Map);
+    return PasskeyCredential(
+      credentialId: map['credentialId'] as String,
+      publicKey: P256PublicKey.fromMap(pkMap),
+      rawAttestationObject: map['rawAttestationObject'] as Uint8List,
+      rawClientDataJson: map['rawClientDataJson'] as Uint8List,
+      isolationLevel: HardwareIsolationLevel.values.firstWhere(
+        (e) => e.name == map['isolationLevel'],
+        orElse: () => HardwareIsolationLevel.software,
+      ),
+    );
+  }
+
   Map<String, dynamic> toMap() => {
         'credentialId': credentialId,
         'publicKey': publicKey.toMap(),

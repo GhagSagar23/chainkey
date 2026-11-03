@@ -3,17 +3,24 @@ import 'package:chainkey_platform_interface/chainkey_platform_interface.dart';
 
 export 'package:chainkey_platform_interface/chainkey_platform_interface.dart'
     show
+        AuthenticatorData,
+        ClientDataJson,
+        DomainCheck,
+        DomainVerificationResult,
         HardwareIsolationLevel,
         BiometricPromptOptions,
         P256PublicKey,
         P256Signature,
+        PasskeyAssertionResult,
         PasskeyCredential,
         ChainkeyException,
         UserCancelledException,
         KeyPermanentlyInvalidatedException,
         BiometricsUnavailableException,
         HardwareEnclaveException,
-        PasskeyException;
+        PasskeyException,
+        verifyAppleAppSiteAssociation,
+        verifyAssetLinks;
 
 /// Primary app-facing class for `chainkey`.
 class Chainkey {
