@@ -89,4 +89,65 @@ class ChainkeyIos extends ChainkeyPlatform {
       throw ChainkeyException.fromPlatformException(e);
     }
   }
+
+  @override
+  Future<PasskeyCredential> registerPasskey({
+    required String relyingPartyId,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List userId,
+    required Uint8List challenge,
+    bool requireUserVerification = true,
+  }) async {
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'registerPasskey',
+        {
+          'relyingPartyId': relyingPartyId,
+          'userName': userName,
+          'userDisplayName': userDisplayName,
+          'userId': userId,
+          'challenge': challenge,
+          'requireUserVerification': requireUserVerification,
+        },
+      );
+      if (result == null) {
+        throw const PasskeyException(
+          'Failed to register passkey on iOS',
+        );
+      }
+      return PasskeyCredential.fromMap(result);
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
+  }
+
+  @override
+  Future<PasskeyAssertionResult> assertPasskey({
+    required String relyingPartyId,
+    required Uint8List challenge,
+    List<String>? allowedCredentialIds,
+    bool requireUserVerification = true,
+  }) async {
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'assertPasskey',
+        {
+          'relyingPartyId': relyingPartyId,
+          'challenge': challenge,
+          if (allowedCredentialIds != null)
+            'allowedCredentialIds': allowedCredentialIds,
+          'requireUserVerification': requireUserVerification,
+        },
+      );
+      if (result == null) {
+        throw const PasskeyException(
+          'Failed to assert passkey on iOS',
+        );
+      }
+      return PasskeyAssertionResult.fromMap(result);
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
+  }
 }

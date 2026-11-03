@@ -6,6 +6,8 @@ import 'models/biometric_prompt_options.dart';
 import 'models/hardware_isolation_level.dart';
 import 'models/p256_public_key.dart';
 import 'models/p256_signature.dart';
+import 'models/passkey_assertion_result.dart';
+import 'models/passkey_credential.dart';
 
 /// The interface that platform implementations of `chainkey` must extend.
 ///
@@ -60,5 +62,27 @@ abstract class ChainkeyPlatform extends PlatformInterface {
     throw UnimplementedError(
       'isHardwareIsolationSupported() has not been implemented.',
     );
+  }
+
+  /// Registers a new WebAuthn passkey credential via native OS Credential APIs.
+  Future<PasskeyCredential> registerPasskey({
+    required String relyingPartyId,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List userId,
+    required Uint8List challenge,
+    bool requireUserVerification = true,
+  }) {
+    throw UnimplementedError('registerPasskey() has not been implemented.');
+  }
+
+  /// Asserts an existing WebAuthn passkey credential to sign a challenge.
+  Future<PasskeyAssertionResult> assertPasskey({
+    required String relyingPartyId,
+    required Uint8List challenge,
+    List<String>? allowedCredentialIds,
+    bool requireUserVerification = true,
+  }) {
+    throw UnimplementedError('assertPasskey() has not been implemented.');
   }
 }
