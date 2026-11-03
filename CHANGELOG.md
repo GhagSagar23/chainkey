@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0
+
+### Added
+
+- **WebAuthn Passkey Engine** — cross-platform passkey registration and assertion via iOS AuthenticationServices, Android CredentialManager, and Web `navigator.credentials` (`dart:js_interop`).
+- **AuthenticatorData parser** — binary parser for rpIdHash, flags (UP/UV/BE/BS/AT/ED), signCount.
+- **ClientDataJSON scanner** — zero-copy UTF-8 byte offset scanner for `challenge` and `type` fields (Solady/Safe contract compatible).
+- **Domain verification CLI** — `dart run chainkey:verify_domain` validates `apple-app-site-association` and `assetlinks.json` for WebAuthn RP binding.
+
 ## 0.3.0
 
 ### Added

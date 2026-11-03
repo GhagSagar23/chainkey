@@ -1,3 +1,12 @@
+## 0.4.0
+
+* Implement passkey registration via `androidx.credentials.CredentialManager` with `CreatePublicKeyCredentialRequest`.
+* Implement passkey assertion via `GetPublicKeyCredentialOption` with coroutine-based async.
+* DER signature parsing and base64url encoding on assertion responses.
+* Map `CreateCredentialCancellationException`/`GetCredentialCancellationException` to `UserCancelledException`.
+* Add `credentials` and `credentials-play-services-auth` dependencies.
+* Bump `chainkey_platform_interface` dependency to ^0.4.0.
+
 ## 0.3.0
 
 * Implement Android KeyStore/StrongBox native P-256 key generation with `setIsStrongBoxBacked(true)` and graceful TEE fallback.

@@ -1,3 +1,12 @@
+## 0.4.0
+
+* Implement passkey registration and assertion via `dart:js_interop` W3C `navigator.credentials` API.
+* Use typed `web` package WebAuthn bindings (`PublicKeyCredentialCreationOptions`, `AuthenticatorAssertionResponse`).
+* Extract real SPKI public key via `getPublicKey()` when available.
+* DER signature parsing via `P256Signature.fromDer()`.
+* Map `NotAllowedError`/`AbortError` to `UserCancelledException`.
+* Bump `chainkey_platform_interface` dependency to ^0.4.0.
+
 ## 0.3.0
 
 * Bump `chainkey_platform_interface` dependency to ^0.3.0.
