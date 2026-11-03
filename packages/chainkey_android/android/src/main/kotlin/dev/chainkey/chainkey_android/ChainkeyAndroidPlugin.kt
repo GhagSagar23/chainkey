@@ -1,6 +1,5 @@
 package dev.chainkey.chainkey_android
 
-import android.app.Activity
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
