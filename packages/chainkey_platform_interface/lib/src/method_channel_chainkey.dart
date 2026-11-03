@@ -7,6 +7,8 @@ import 'models/biometric_prompt_options.dart';
 import 'models/hardware_isolation_level.dart';
 import 'models/p256_public_key.dart';
 import 'models/p256_signature.dart';
+import 'models/passkey_assertion_result.dart';
+import 'models/passkey_credential.dart';
 
 /// An implementation of [ChainkeyPlatform] that uses method channels.
 class MethodChannelChainkey extends ChainkeyPlatform {
@@ -86,6 +88,67 @@ class MethodChannelChainkey extends ChainkeyPlatform {
         {'level': level.name},
       );
       return result ?? false;
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
+  }
+
+  @override
+  Future<PasskeyCredential> registerPasskey({
+    required String relyingPartyId,
+    required String userName,
+    required String userDisplayName,
+    required Uint8List userId,
+    required Uint8List challenge,
+    bool requireUserVerification = true,
+  }) async {
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'registerPasskey',
+        {
+          'relyingPartyId': relyingPartyId,
+          'userName': userName,
+          'userDisplayName': userDisplayName,
+          'userId': userId,
+          'challenge': challenge,
+          'requireUserVerification': requireUserVerification,
+        },
+      );
+      if (result == null) {
+        throw const PasskeyException(
+          'Failed to receive response for registerPasskey',
+        );
+      }
+      return PasskeyCredential.fromMap(result);
+    } on PlatformException catch (e) {
+      throw ChainkeyException.fromPlatformException(e);
+    }
+  }
+
+  @override
+  Future<PasskeyAssertionResult> assertPasskey({
+    required String relyingPartyId,
+    required Uint8List challenge,
+    List<String>? allowedCredentialIds,
+    bool requireUserVerification = true,
+  }) async {
+    try {
+      final result = await methodChannel.invokeMapMethod<String, dynamic>(
+        'assertPasskey',
+        {
+          'relyingPartyId': relyingPartyId,
+          'challenge': challenge,
+          if (allowedCredentialIds != null)
+            'allowedCredentialIds': allowedCredentialIds,
+          'requireUserVerification': requireUserVerification,
+        },
+      );
+      if (result == null) {
+        throw const PasskeyException(
+          'Failed to receive response for assertPasskey',
+        );
+      }
+      return PasskeyAssertionResult.fromMap(result);
     } on PlatformException catch (e) {
       throw ChainkeyException.fromPlatformException(e);
     }
