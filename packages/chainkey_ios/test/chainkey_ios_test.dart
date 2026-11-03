@@ -279,8 +279,7 @@ void main() {
     expect(args['allowedCredentialIds'], ['cred-1', 'cred-2']);
   });
 
-  test('assertPasskey maps USER_CANCELLED to UserCancelledException',
-      () async {
+  test('assertPasskey maps USER_CANCELLED to UserCancelledException', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
       const MethodChannel('dev.chainkey/chainkey_ios'),

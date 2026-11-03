@@ -66,8 +66,7 @@ class PasskeyAssertionResult {
       signature.hashCode;
 
   @override
-  String toString() =>
-      'PasskeyAssertionResult(credentialId: $credentialId)';
+  String toString() => 'PasskeyAssertionResult(credentialId: $credentialId)';
 
   bool _listEquals(Uint8List a, Uint8List b) {
     if (a.length != b.length) return false;
