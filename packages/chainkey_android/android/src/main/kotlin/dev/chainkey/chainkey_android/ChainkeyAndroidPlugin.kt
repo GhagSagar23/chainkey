@@ -36,9 +36,13 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "generateHardwareKey" -> handleGenerateHardwareKey(call, result)
             "signWithHardwareKey" -> handleSignWithHardwareKey(call, result)
             "deleteHardwareKey" -> handleDeleteHardwareKey(call, result)
+            "registerPasskey" -> handleRegisterPasskey(call, result)
+            "assertPasskey" -> handleAssertPasskey(call, result)
             else -> result.notImplemented()
         }
     }
+
+    internal fun getActivity(): FragmentActivity? = activity
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
