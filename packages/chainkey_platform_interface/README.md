@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../../assets/chainkey-logo.png" alt="ChainKey Logo" width="180" />
+</p>
+
 # chainkey_platform_interface
 
 A common platform interface for the [`chainkey`](https://pub.dev/packages/chainkey) federated plugin.
