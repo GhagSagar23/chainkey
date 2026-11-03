@@ -1,3 +1,7 @@
+## 0.3.0
+
+* No API changes; version bump to align with native implementations.
+
 ## 0.2.0
 
 * Add `P256Signature.fromDer` ASN.1 DER unpacker.
