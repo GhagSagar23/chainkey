@@ -1,6 +1,6 @@
 name: chainkey_web
 description: Web implementation of the chainkey plugin using W3C WebAuthn Credential Management API.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/GhagSagar23/chainkey/tree/master/packages/chainkey_web
 issue_tracker: https://github.com/GhagSagar23/chainkey/issues
 resolution: workspace
@@ -15,7 +15,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   web: ^1.0.0
-  chainkey_platform_interface: ^0.2.0
+  chainkey_platform_interface: ^0.3.0
 
 dev_dependencies:
   flutter_test:

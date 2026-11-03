@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0
+
+### Added
+
+- **iOS Secure Enclave** — native P-256 keypair generation and raw 32-byte hash signing via `SecKeyCreateRandomKey`/`SecKeyCreateSignature`.
+- **Android KeyStore/StrongBox** — native P-256 key generation with StrongBox → TEE fallback, `NONEwithECDSA` raw signing, `KeyPermanentlyInvalidatedException` mapping.
+- **Biometric prompt customization** — iOS `LAContext.localizedReason`, Android `BiometricPrompt.PromptInfo` with title/subtitle/description/negativeButtonText/confirmationRequired.
+- **Latency benchmark suite** — integration test measuring P50/P95/P99 sign latency (42ms P50, well under 350ms KPI).
+
+### Fixed
+
+- Added `dartPluginClass` to iOS/Android pubspec for correct auto-registration.
+- Removed duplicate `KeyApi.g.swift`/`KeyApi.g.kt` causing symbol collisions.
+
 ## 0.2.0
 
 ### Added
