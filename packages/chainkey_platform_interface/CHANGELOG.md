@@ -1,3 +1,12 @@
+## 0.4.0
+
+* Add `registerPasskey()` and `assertPasskey()` abstract methods to `ChainkeyPlatform`.
+* Add `PasskeyAssertionResult` model for WebAuthn assertion responses.
+* Add `PasskeyCredential.fromMap()` factory with nested map casting for MethodChannel.
+* Add `AuthenticatorData.parse()` binary parser for authenticator data bytes.
+* Add `ClientDataJson.parse()` zero-copy UTF-8 byte offset scanner.
+* Add `DomainVerificationResult`, `verifyAppleAppSiteAssociation()`, `verifyAssetLinks()` for RP domain validation.
+
 ## 0.3.0
 
 * No API changes; version bump to align with native implementations.
