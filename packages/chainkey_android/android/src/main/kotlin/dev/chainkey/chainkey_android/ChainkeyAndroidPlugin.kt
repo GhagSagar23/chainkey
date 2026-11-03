@@ -120,34 +120,33 @@ class ChainkeyAndroidPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     }
                 }
 
-        var isolationLevel = "tee"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                specBuilder.setIsStrongBoxBacked(true)
-                isolationLevel = "strongBox"
-            } catch (_: Exception) {
-                isolationLevel = "tee"
-            }
-        }
-
         val keyPairGenerator =
             KeyPairGenerator.getInstance(
                 KeyProperties.KEY_ALGORITHM_EC,
                 "AndroidKeyStore",
             )
 
-        try {
-            keyPairGenerator.initialize(specBuilder.build())
-        } catch (e: Exception) {
-            if (isolationLevel == "strongBox" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                specBuilder.setIsStrongBoxBacked(false)
-                isolationLevel = "tee"
+        var isolationLevel = "tee"
+
+        // Attempt StrongBox on API 28+; fall back to TEE on any failure
+        // (some devices accept the spec but fail at generateKeyPair)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            try {
+                specBuilder.setIsStrongBoxBacked(true)
                 keyPairGenerator.initialize(specBuilder.build())
-            } else {
-                throw e
+                val keyPair = keyPairGenerator.generateKeyPair()
+                val ecPublicKey = keyPair.public as ECPublicKey
+                return extractPublicKeyMap(ecPublicKey, keyAlias, "strongBox")
+            } catch (_: Exception) {
+                // StrongBox unavailable or failed; clean up and retry with TEE
+                if (keyStore.containsAlias(keyAlias)) {
+                    keyStore.deleteEntry(keyAlias)
+                }
+                specBuilder.setIsStrongBoxBacked(false)
             }
         }
 
+        keyPairGenerator.initialize(specBuilder.build())
         val keyPair = keyPairGenerator.generateKeyPair()
         val ecPublicKey = keyPair.public as ECPublicKey
 
