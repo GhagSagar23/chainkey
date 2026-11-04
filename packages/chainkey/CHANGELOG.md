@@ -1,3 +1,8 @@
+## 0.5.0
+
+* Export `encodeSafePasskeySignature`, `encodeErc7579WebAuthnSignature`, `encodeEip7212Payload`, and `eip7212PrecompileAddress` from platform interface.
+* Bump all platform dependencies to ^0.5.0.
+
 ## 0.4.0
 
 * Cross-platform WebAuthn passkey registration and assertion (iOS, Android, Web).

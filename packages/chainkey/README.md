@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../../assets/chainkey-logo.png" alt="ChainKey Logo" width="180" />
+</p>
+
 # chainkey
 
 [![pub package](https://img.shields.io/pub/v/chainkey.svg)](https://pub.dev/packages/chainkey)
