@@ -5,6 +5,10 @@ export 'package:chainkey_platform_interface/chainkey_platform_interface.dart'
     show
         AuthenticatorData,
         ClientDataJson,
+        eip7212PrecompileAddress,
+        encodeEip7212Payload,
+        encodeErc7579WebAuthnSignature,
+        encodeSafePasskeySignature,
         DomainCheck,
         DomainVerificationResult,
         HardwareIsolationLevel,

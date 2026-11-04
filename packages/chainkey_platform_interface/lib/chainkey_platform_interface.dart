@@ -1,3 +1,6 @@
+export 'src/adapters/eip7212_precompile_adapter.dart';
+export 'src/adapters/erc7579_webauthn_adapter.dart';
+export 'src/adapters/safe_passkey_adapter.dart';
 export 'src/chainkey_platform_interface.dart';
 export 'src/exceptions/chainkey_exceptions.dart';
 export 'src/method_channel_chainkey.dart';
