@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+### Added
+
+- `encodeSafePasskeySignature()` — Safe 4337 WebAuthn Signer ABI encoder.
+- `encodeErc7579WebAuthnSignature()` — ERC-7579 WebAuthnAuth struct encoder (ZeroDev Kernel v3, Biconomy Nexus).
+- `encodeEip7212Payload()` — EIP-7212 secp256r1 precompile 160-byte payload serializer.
+- `eip7212PrecompileAddress` constant.
+
 ## 0.4.0
 
 ### Added
