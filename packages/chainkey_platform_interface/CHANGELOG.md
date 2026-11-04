@@ -1,3 +1,10 @@
+## 0.5.0
+
+* Add `encodeSafePasskeySignature()` ABI encoder for Safe 4337 WebAuthn Signer module.
+* Add `encodeErc7579WebAuthnSignature()` ABI encoder for ZeroDev Kernel v3 and Biconomy Nexus modular accounts.
+* Add `encodeEip7212Payload()` 160-byte serializer for the EIP-7212 secp256r1 precompile.
+* Add `eip7212PrecompileAddress` constant.
+
 ## 0.4.0
 
 * Add `registerPasskey()` and `assertPasskey()` abstract methods to `ChainkeyPlatform`.

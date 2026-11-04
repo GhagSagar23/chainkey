@@ -1,3 +1,7 @@
+## 0.5.0
+
+* Bump `chainkey_platform_interface` dependency to ^0.5.0.
+
 ## 0.4.0
 
 * Implement passkey registration and assertion via `dart:js_interop` W3C `navigator.credentials` API.
