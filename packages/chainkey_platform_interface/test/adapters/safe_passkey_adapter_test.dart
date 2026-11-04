@@ -172,8 +172,8 @@ void main() {
     });
 
     test('reversed JSON key order produces correct offsets', () {
-      final clientData =
-          _utf8('{"challenge":"Zm9v","type":"webauthn.get","origin":"https://example.com"}');
+      final clientData = _utf8(
+          '{"challenge":"Zm9v","type":"webauthn.get","origin":"https://example.com"}');
       final clientParsed = ClientDataJson.parse(clientData);
 
       final encoded = encodeSafePasskeySignature(

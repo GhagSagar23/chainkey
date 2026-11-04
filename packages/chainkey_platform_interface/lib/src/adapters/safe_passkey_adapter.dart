@@ -50,11 +50,13 @@ Uint8List encodeSafePasskeySignature({
 
   // authenticatorData: length + padded bytes
   _writeUint256(buf, authDataOffset, authenticatorData.length);
-  buf.setRange(authDataOffset + 32, authDataOffset + 32 + authenticatorData.length, authenticatorData);
+  buf.setRange(authDataOffset + 32,
+      authDataOffset + 32 + authenticatorData.length, authenticatorData);
 
   // clientDataJSON: length + padded bytes
   _writeUint256(buf, clientDataOffset, clientDataJson.length);
-  buf.setRange(clientDataOffset + 32, clientDataOffset + 32 + clientDataJson.length, clientDataJson);
+  buf.setRange(clientDataOffset + 32,
+      clientDataOffset + 32 + clientDataJson.length, clientDataJson);
 
   return buf;
 }
