@@ -7,22 +7,35 @@
 [![pub package](https://img.shields.io/pub/v/chainkey.svg)](https://pub.dev/packages/chainkey)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/GhagSagar23/chainkey/blob/master/LICENSE)
 [![CI](https://github.com/GhagSagar23/chainkey/actions/workflows/ci.yml/badge.svg)](https://github.com/GhagSagar23/chainkey/actions/workflows/ci.yml)
+[![Pana](https://github.com/GhagSagar23/chainkey/actions/workflows/pana.yml/badge.svg)](https://github.com/GhagSagar23/chainkey/actions/workflows/pana.yml)
 
 A turnkey Flutter plugin for **seedless Web3 authentication** and **smart contract account abstraction**.
 
-`chainkey` enables applications to generate non-exportable cryptographic keypairs directly inside hardware security enclaves (**Apple Secure Enclave** and **Android StrongBox / TEE**) and web authenticators (**W3C WebAuthn / Passkeys**). Private keys never leave the hardware chip and require user biometric presence (Face ID, Touch ID, Fingerprint) for every signature.
+`chainkey` generates non-exportable cryptographic keypairs inside hardware security enclaves (**Apple Secure Enclave**, **Android StrongBox / TEE**) and web authenticators (**W3C WebAuthn / Passkeys**). Private keys never leave the hardware chip; every signature requires biometric presence (Face ID, Touch ID, Fingerprint).
 
-Signatures are emitted with pre-unpacked, low-$S$ normalized `(r, s)` scalar components ready for on-chain verification via **EIP-7212** precompiles or **ERC-4337** smart contract wallets.
+Signatures are emitted with pre-unpacked, low-S normalized `(r, s)` scalars ready for on-chain verification via **EIP-7212** precompiles or **ERC-4337** smart contract wallets.
 
 ---
 
-## Supported Platforms & Hardware Tiers
+## Features
 
-| Platform | Hardware Isolation Tier | Biometric Technology | Key Curve |
+- **Hardware key generation** — NIST P-256 keypairs in Secure Enclave / StrongBox / TEE
+- **WebAuthn passkeys** — Registration and assertion on iOS, Android, and Web
+- **Smart account adapters** — ABI encoders for Safe, ZeroDev Kernel v3, Biconomy Nexus
+- **EIP-7212 precompile** — 160-byte payload serializer for on-chain P-256 verification
+- **ERC-4337 UserOp helpers** — `callData` builders for multi-device key registration and revocation
+- **Key recovery handler** — Automatic detection and recovery from `KeyPermanentlyInvalidatedException`
+- **Multi-signer state** — Immutable device lifecycle tracking model
+
+---
+
+## Supported Platforms
+
+| Platform | Hardware Isolation | Biometric | Key Curve |
 | :--- | :--- | :--- | :--- |
-| **iOS** | Apple Secure Enclave (SEP) | Face ID / Touch ID (`LAContext`) | NIST P-256 (`secp256r1`) |
-| **Android** | StrongBox HSM / ARM TrustZone TEE | Android `BiometricPrompt` | NIST P-256 (`secp256r1`) |
-| **Web** | Platform Authenticator / Security Keys | Passkeys / WebAuthn / WebCrypto | NIST P-256 (`secp256r1`) |
+| **iOS** | Secure Enclave (SEP) | Face ID / Touch ID | NIST P-256 |
+| **Android** | StrongBox HSM / ARM TEE | BiometricPrompt | NIST P-256 |
+| **Web** | Platform Authenticator | Passkeys / WebAuthn | NIST P-256 |
 
 ---
 
@@ -30,107 +43,166 @@ Signatures are emitted with pre-unpacked, low-$S$ normalized `(r, s)` scalar com
 
 ### 1. Add Dependency
 
-Add `chainkey` to your Flutter app's `pubspec.yaml`:
-
 ```yaml
 dependencies:
-  chainkey: ^0.1.0
+  chainkey: ^0.5.0
 ```
 
 ### 2. Platform Setup
 
-#### iOS
-Add the `NSFaceIDUsageDescription` entry to `ios/Runner/Info.plist`:
+**iOS** — add to `ios/Runner/Info.plist`:
 
 ```xml
 <key>NSFaceIDUsageDescription</key>
-<string>Authenticate using biometrics to sign transactions securely.</string>
+<string>Authenticate to sign transactions securely.</string>
 ```
 
-#### Android
-Ensure `minSdk` is at least `24` in `android/app/build.gradle`:
-
-```gradle
-android {
-    defaultConfig {
-        minSdkVersion 24
-    }
-}
-```
+**Android** — ensure `minSdk >= 24` in `android/app/build.gradle`.
 
 ---
 
 ## Usage
 
-### 1. Check Hardware Isolation Support
+### Hardware Key Generation
 
 ```dart
 import 'package:chainkey/chainkey.dart';
 
-// Check if dedicated hardware HSM is available on this physical device
-final isStrongBoxAvailable = await Chainkey.instance.isHardwareIsolationSupported(
-  HardwareIsolationLevel.strongBox,
-);
+const chainkey = Chainkey();
 
-final isSecureEnclaveAvailable = await Chainkey.instance.isHardwareIsolationSupported(
-  HardwareIsolationLevel.secureEnclave,
-);
-```
-
-### 2. Generate a Hardware Keypair
-
-```dart
-final key = await Chainkey.instance.generateHardwareKey(
-  alias: 'wallet_key_0',
+// Generate a non-exportable P-256 keypair in the hardware enclave
+final key = await chainkey.generateHardwareKey(
+  keyAlias: 'wallet_key_0',
   requireUserPresence: true,
-  requireStrongBox: true,
 );
 
-print('Public key X: ${key.x}');
-print('Public key Y: ${key.y}');
-print('Uncompressed SEC1 bytes: ${key.uncompressedBytes}');
+print('X: ${key.x}');  // 32-byte big-endian
+print('Y: ${key.y}');  // 32-byte big-endian
+print('Isolation: ${key.isolationLevel}');
 ```
 
-### 3. Sign a 32-Byte Hash (e.g. ERC-4337 UserOpHash)
+### Biometric Signing
 
 ```dart
-import 'dart:typed_data';
-
-final userOpHash = Uint8List(32); // 32-byte digest
-
-final signature = await Chainkey.instance.signWithHardwareKey(
-  alias: 'wallet_key_0',
-  hash32: userOpHash,
-  promptOptions: BiometricPromptOptions(
+final signature = await chainkey.signWithHardwareKey(
+  keyAlias: 'wallet_key_0',
+  hash32: userOpHash,  // 32-byte digest (e.g. ERC-4337 UserOpHash)
+  promptOptions: const BiometricPromptOptions(
     title: 'Confirm Transaction',
     subtitle: 'Authorize transfer from smart account',
-    negativeButtonText: 'Cancel',
   ),
 );
 
-// Low-S normalized scalar components for EIP-7212 precompile:
-print('r scalar: ${signature.r}');
-print('s scalar: ${signature.s}');
-print('Raw ASN.1 DER signature: ${signature.rawDerSignature}');
+// Low-S normalized scalars for EIP-7212:
+print('r: ${signature.r}');
+print('s: ${signature.s}');
+print('isLowS: ${signature.isLowS}');
 ```
 
-### 4. Delete Keypair
+### EIP-7212 Precompile Verification
 
 ```dart
-await Chainkey.instance.deleteHardwareKey('wallet_key_0');
+// Build the 160-byte payload for the P-256 precompile (0x100)
+final payload = encodeEip7212Payload(
+  messageHash: userOpHash,
+  signature: signature,
+  publicKey: key,
+);
+// Submit via eth_call to 0x0000...0100 on Base, Arbitrum, etc.
+```
+
+### Smart Account Signature Adapters
+
+```dart
+// Safe 4337 WebAuthn Signer module
+final safeSig = encodeSafePasskeySignature(
+  signature: sig,
+  authenticatorData: authData,
+  clientDataJson: clientJson,
+  clientDataParsed: clientParsed,
+);
+
+// ZeroDev Kernel v3 / Biconomy Nexus (ERC-7579)
+final erc7579Sig = encodeErc7579WebAuthnSignature(
+  signature: sig,
+  authenticatorData: authData,
+  clientDataJson: clientJson,
+  clientDataParsed: clientParsed,
+);
+```
+
+### Multi-Device Key Management
+
+```dart
+// Add a new device's key to the smart account (Safe)
+final callData = encodeSafeAddOwnerCallData(
+  ownerAddress: newSignerAddress,
+  threshold: 1,
+);
+
+// Or via ERC-7579 validator module
+final callData = encodeErc7579InstallP256ValidatorCallData(
+  moduleAddress: validatorAddress,
+  publicKey: newDeviceKey,
+);
+
+// Track signer lifecycle
+var state = const MultiSignerState.empty();
+state = state.addSigner(SignerEntry(
+  credentialId: credential.credentialId,
+  publicKey: key,
+  label: 'iPhone 15',
+));
+```
+
+### Key Recovery
+
+```dart
+final handler = KeyRecoveryHandler(
+  platform: ChainkeyPlatform.instance,
+  onKeyInvalidated: (event) async {
+    // Notify user, update UI, trigger rotation flow
+    print('Key ${event.keyAlias} was invalidated');
+  },
+);
+
+try {
+  final sig = await handler.signWithRecovery(
+    keyAlias: 'wallet_key_0',
+    hash32: hash,
+  );
+} on KeyPermanentlyInvalidatedException {
+  // Rotate: delete old key, generate new, register on-chain
+  final newKey = await handler.rotateKey(keyAlias: 'wallet_key_0');
+}
 ```
 
 ---
 
 ## Standards Compliance
 
-- **NIST P-256 / secp256r1**: Standard curve supported by Apple SEP, Android StrongBox, and WebAuthn.
-- **BIP-62 & EIP-2**: Strict low-$S$ scalar normalization ($s \le n/2$) preventing transaction malleability.
-- **EIP-7212**: EVM precompile for secp256r1 curve support on Ethereum rollups and L2 networks.
-- **ERC-4337**: Compatible with Smart Contract Wallets and Passkey-based Account Abstraction.
+| Standard | Purpose |
+| :--- | :--- |
+| **NIST P-256** | Curve supported by Apple SEP, Android StrongBox, WebAuthn |
+| **BIP-62 / EIP-2** | Low-S normalization preventing signature malleability |
+| **EIP-7212** | EVM precompile for secp256r1 verification on L2s |
+| **ERC-4337** | Account abstraction — UserOperation signing |
+| **ERC-7579** | Modular smart account validator interface |
+| **WebAuthn / FIDO2** | W3C credential API for passkey auth |
+
+---
+
+## Example App
+
+See [`example/`](example/) for a production-grade reference app demonstrating seedless wallet creation, USDC transfer signing, and key recovery.
+
+```bash
+cd packages/chainkey/example
+flutter run
+```
 
 ---
 
 ## License
 
-This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+Apache-2.0 — see [LICENSE](../../LICENSE).
