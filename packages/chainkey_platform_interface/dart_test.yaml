@@ -1,0 +1,3 @@
+tags:
+  testnet:
+    skip: "Requires live testnet RPC/bundler env vars. Run with: flutter test --tags testnet"
