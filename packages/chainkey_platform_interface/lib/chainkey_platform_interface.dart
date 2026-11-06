@@ -1,6 +1,7 @@
 export 'src/adapters/eip7212_precompile_adapter.dart';
 export 'src/adapters/erc7579_webauthn_adapter.dart';
 export 'src/adapters/safe_passkey_adapter.dart';
+export 'src/adapters/userop_helpers.dart';
 export 'src/chainkey_platform_interface.dart';
 export 'src/exceptions/chainkey_exceptions.dart';
 export 'src/method_channel_chainkey.dart';
@@ -13,4 +14,5 @@ export 'src/models/p256_public_key.dart';
 export 'src/models/p256_signature.dart';
 export 'src/models/passkey_assertion_result.dart';
 export 'src/models/passkey_credential.dart';
+export 'src/models/signer_state.dart';
 export 'src/pigeon/chainkey_api.g.dart';
