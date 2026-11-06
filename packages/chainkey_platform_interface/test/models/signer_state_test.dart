@@ -54,8 +54,7 @@ void main() {
 
     test('updateStatus transitions a signer', () {
       final state = MultiSignerState([_entry('a'), _entry('b')]);
-      final updated =
-          state.updateStatus('a', SignerStatus.pendingRevocation);
+      final updated = state.updateStatus('a', SignerStatus.pendingRevocation);
       expect(
         updated.byCredentialId('a')?.status,
         SignerStatus.pendingRevocation,

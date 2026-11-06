@@ -95,10 +95,7 @@ class MultiSignerState {
   MultiSignerState updateStatus(String credentialId, SignerStatus status) =>
       MultiSignerState([
         for (final s in signers)
-          if (s.credentialId == credentialId)
-            s.copyWith(status: status)
-          else
-            s,
+          if (s.credentialId == credentialId) s.copyWith(status: status) else s,
       ]);
 
   @override
