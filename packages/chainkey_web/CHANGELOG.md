@@ -1,3 +1,7 @@
+## 0.6.0
+
+* Bump `chainkey_platform_interface` dependency to ^0.6.0.
+
 ## 0.5.0
 
 * Bump `chainkey_platform_interface` dependency to ^0.5.0.
