@@ -1,3 +1,13 @@
+## 0.6.0
+
+* Add ERC-4337 UserOp `callData` helpers for multi-device key registration and revocation (Safe `addOwner`/`removeOwner`, ERC-7579 `installModule`/`uninstallModule`).
+* Add `MultiSignerState`, `SignerEntry`, `SignerStatus` for multi-device signer lifecycle tracking.
+* Add `KeyRecoveryHandler` for automatic detection and recovery from `KeyPermanentlyInvalidatedException`.
+* Add `KeyInvalidationEvent` and `OnKeyInvalidated` callback type.
+* Add live testnet integration test harness for Base Sepolia and Arbitrum Sepolia.
+* Rewrite example app as production-grade reference (seedless onboarding, USDC transfer signing, key recovery).
+* Update README with complete API documentation.
+
 ## 0.5.0
 
 * Export `encodeSafePasskeySignature`, `encodeErc7579WebAuthnSignature`, `encodeEip7212Payload`, and `eip7212PrecompileAddress` from platform interface.
