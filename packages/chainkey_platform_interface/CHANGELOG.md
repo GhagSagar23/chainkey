@@ -1,3 +1,14 @@
+## 0.6.0
+
+* Add `encodeSafeAddOwnerCallData()` and `encodeSafeRemoveOwnerCallData()` for Safe multi-owner management.
+* Add `encodeErc7579InstallP256ValidatorCallData()` and `encodeErc7579UninstallValidatorCallData()` for ERC-7579 modular accounts.
+* Add `erc7579ValidatorTypeId` constant.
+* Add `MultiSignerState`, `SignerEntry`, `SignerStatus` models for multi-device signer lifecycle.
+* Add `KeyInvalidationEvent` model.
+* Add `KeyRecoveryHandler` with `signWithRecovery()` and `rotateKey()`.
+* Add `OnKeyInvalidated` callback typedef.
+* Add live testnet integration test harness (tagged `testnet`, skipped by default).
+
 ## 0.5.0
 
 * Add `encodeSafePasskeySignature()` ABI encoder for Safe 4337 WebAuthn Signer module.
